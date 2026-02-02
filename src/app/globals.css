@@ -2,26 +2,160 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    /* Base Colors */
+    --background: 222 47% 4%;
+    --foreground: 213 31% 91%;
+
+    /* Brand Colors */
+    --primary: 199 89% 48%;
+    /* Cyber Blue */
+    --secondary: 263 70% 50%;
+    /* Neuro Purple */
+    --accent: 280 100% 70%;
+    /* Tech Pink */
+
+    /* Functional Colors */
+    --success: 142 70% 45%;
+    /* Bio Green */
+    --warning: 38 92% 50%;
+    /* Alert Gold */
+    --danger: 0 84% 60%;
+    /* Emergency Red */
+    --info: 199 89% 48%;
+    /* Diagnostic Blue */
+
+    /* Layout */
+    --card: 222 47% 6%;
+    --card-foreground: 213 31% 91%;
+    --popover: 222 47% 4%;
+    --popover-foreground: 213 31% 91%;
+    --muted: 223 47% 11%;
+    --muted-foreground: 215.4 16.3% 56.9%;
+    --border: 216 34% 17%;
+    --input: 216 34% 17%;
+    --ring: 199 89% 48%;
+    --radius: 1rem;
   }
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  @apply bg-[#020617] text-slate-50;
+  font-feature-settings: "rlig" 1, "calt" 1;
+  background-image:
+    radial-gradient(at 0% 0%, hsla(199, 89%, 48%, 0.05) 0, transparent 50%),
+    radial-gradient(at 100% 100%, hsla(263, 70%, 50%, 0.05) 0, transparent 50%);
+  background-attachment: fixed;
 }
 
 @layer utilities {
-  .text-balance {
-    text-wrap: balance;
+  .glass {
+    @apply bg-white/[0.03] backdrop-blur-xl border border-white/10;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
   }
+
+  .glass-morphism {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  }
+
+  .glass-card {
+    @apply bg-slate-900/40 backdrop-blur-md border border-white/5 hover:border-white/10 transition-all duration-300;
+  }
+
+  .glow-text {
+    text-shadow: 0 0 20px rgba(0, 209, 255, 0.5);
+  }
+
+  .glow-text-primary {
+    text-shadow: 0 0 15px hsl(var(--primary) / 0.5);
+  }
+
+  .glow-border {
+    box-shadow: 0 0 15px rgba(0, 209, 255, 0.2);
+  }
+
+  .gradient-text {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-[#00D1FF] via-[#7000FF] to-[#FF00E5];
+  }
+
+  .medical-grid {
+    background-size: 40px 40px;
+    background-image: linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+.animate-scan {
+  animation: scan 3s linear infinite;
+}
+
+@keyframes scan {
+  0% {
+    transform: translateY(-100%);
+  }
+
+  100% {
+    transform: translateY(100%);
+  }
+}
+
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+/* Rural Mode Adjustments */
+.rural-mode {
+  --background: 222 0% 10%;
+  --foreground: 0 0% 100%;
+}
+
+.rural-mode body {
+  background-image: none !important;
+  background-color: #1a1a1a !important;
+}
+
+.rural-mode .medical-grid {
+  background-image: none !important;
+}
+
+.rural-mode .glass-morphism,
+.rural-mode .glass-card,
+.rural-mode .glass {
+  background: #2a2a2a !important;
+  backdrop-filter: none !important;
+  border: 1px solid #444 !important;
+}
+
+/* Privacy Mode Adjustments */
+.privacy-mode .patient-data {
+  filter: blur(8px);
+  user-select: none;
+  pointer-events: none;
+}
+
+.privacy-mode .patient-sensitive {
+  background: #000 !important;
+  color: transparent !important;
+  border-radius: 4px;
 }
