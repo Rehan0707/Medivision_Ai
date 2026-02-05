@@ -19,6 +19,8 @@ export default function VisualizerPage() {
     const [activeHotspotId, setActiveHotspotId] = useState<string | null>(null);
     const [showSource, setShowSource] = useState(false);
 
+    const canShow3DModel = !detectedPart.includes("chest") && !detectedPart.includes("lung") && !detectedPart.includes("thorax");
+
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -135,12 +137,12 @@ export default function VisualizerPage() {
                         <div className="absolute inset-0 medical-grid opacity-10" />
 
                         <div className="absolute inset-0">
-                            {showSource ? (
+                            {canShow3DModel && !showSource ? (
+                                renderScene()
+                            ) : (
                                 <div className="w-full h-full flex items-center justify-center p-20 bg-black/40">
                                     <img src={currentImage!} className="max-w-full max-h-full rounded-2xl shadow-2xl border border-white/10" alt="Source" />
                                 </div>
-                            ) : (
-                                renderScene()
                             )}
                         </div>
 
@@ -157,14 +159,16 @@ export default function VisualizerPage() {
 
                         <div className="absolute bottom-10 left-10 right-10 flex justify-between items-end pointer-events-none z-10">
                             <div className="flex gap-3 pointer-events-auto">
-                                <button
-                                    onClick={() => setShowSource(!showSource)}
-                                    className={`px-6 py-3 rounded-xl font-black text-xs transition-all shadow-lg ${showSource ? 'bg-white text-black' : 'bg-black/60 text-white border border-white/10'}`}
-                                >
-                                    {showSource ? "VIEW 3D MODEL" : "VIEW SOURCE X-RAY"}
-                                </button>
+                                {(!detectedPart.includes("chest") && !detectedPart.includes("lung") && !detectedPart.includes("thorax")) && (
+                                    <button
+                                        onClick={() => setShowSource(!showSource)}
+                                        className={`px-6 py-3 rounded-xl font-black text-xs transition-all shadow-lg ${!showSource ? 'bg-[#00D1FF] text-black' : 'bg-black/60 text-white border border-white/10'}`}
+                                    >
+                                        {!showSource ? "VIEW 3D MODEL" : "VIEW SOURCE X-RAY"}
+                                    </button>
+                                )}
                                 <button className="px-6 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-xs font-black hover:bg-white/10 transition-all capitalize">
-                                    {detectedPart} Segment Alpha
+                                    {detectedPart} Analysis
                                 </button>
                             </div>
                             <div className="p-6 rounded-2xl bg-black/40 backdrop-blur-xl border border-white/10 max-w-sm pointer-events-auto">

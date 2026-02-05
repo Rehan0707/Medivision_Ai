@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useScroll, useTransform } from "framer-motion";
-import { Brain, Activity, Bone, FlaskConical, ChevronRight, ShieldCheck, Microscope, Zap, ArrowRight, CheckCircle2, Globe2 } from "lucide-react";
+import { Brain, Activity, Bone, FlaskConical, ChevronRight, ShieldCheck, Microscope, Zap, ArrowRight, CheckCircle2, Globe2, Play } from "lucide-react";
 import HeroScene from "@/components/animations/Model";
 import Link from "next/link";
 import { useRef } from "react";
@@ -46,6 +46,9 @@ export default function Home() {
           <span className="text-xl font-black tracking-tighter uppercase italic">MediVision AI</span>
         </div>
         <div className="flex items-center gap-8">
+          <Link href="/keynote" className="text-xs font-black uppercase tracking-[0.2em] text-[#00D1FF] hover:text-white transition-colors animate-pulse">
+            Watch Vision
+          </Link>
           <Link href="/auth" className="text-xs font-black uppercase tracking-[0.2em] text-slate-400 hover:text-white transition-colors">
             Support
           </Link>
@@ -59,22 +62,15 @@ export default function Home() {
       <section className="relative px-6 pt-48 pb-20 mx-auto max-w-7xl z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           <motion.div
-            initial="hidden"
-            animate="visible"
-            variants={{
-              hidden: { opacity: 0 },
-              visible: {
-                opacity: 1,
-                transition: { staggerChildren: 0.2 }
-              }
-            }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8 }}
             className="z-10 text-left"
           >
             <motion.div
-              variants={{
-                hidden: { opacity: 0, y: 20 },
-                visible: { opacity: 1, y: 0 }
-              }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card text-xs font-bold text-[#00D1FF] mb-8 border-[#00D1FF]/20"
             >
               <Zap size={14} className="animate-pulse" />
@@ -82,10 +78,9 @@ export default function Home() {
             </motion.div>
 
             <motion.h1
-              variants={{
-                hidden: { opacity: 0, x: -50 },
-                visible: { opacity: 1, x: 0 }
-              }}
+              initial={{ opacity: 0, x: -50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.3, duration: 0.8 }}
               className="text-7xl md:text-8xl font-black tracking-tight mb-8 leading-[1.1] text-white"
             >
               Visualizing <br />
@@ -93,110 +88,83 @@ export default function Home() {
             </motion.h1>
 
             <motion.p
-              variants={{
-                hidden: { opacity: 0 },
-                visible: { opacity: 1 }
-              }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
               className="text-xl text-slate-400 mb-12 max-w-xl leading-relaxed font-medium"
             >
               MediVision AI transforms complex medical data into clear visual insights, empowering patients to see and understand what is happening inside their bodies.
             </motion.p>
 
             <motion.div
-              variants={{
-                hidden: { opacity: 0, y: 20 },
-                visible: { opacity: 1, y: 0 }
-              }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
               className="flex flex-wrap gap-6"
             >
               <Link href="/auth" className="group px-10 py-5 rounded-2xl bg-[#00D1FF] text-black font-black hover:scale-105 active:scale-95 transition-all flex items-center gap-3 shadow-[0_0_30px_rgba(0,209,255,0.4)]">
                 LAUNCH PLATFORM
                 <ArrowRight size={20} className="group-hover:translate-x-2 transition-transform" />
               </Link>
-              <button
-                onClick={() => document.getElementById('vision-section')?.scrollIntoView({ behavior: 'smooth' })}
-                className="px-10 py-5 rounded-2xl border border-white/10 glass-card hover:bg-white/5 transition-colors font-bold tracking-wide text-white hover:border-[#00D1FF]/50 active:scale-95"
+              <Link
+                href="/keynote"
+                className="group px-10 py-5 rounded-2xl border border-white/10 glass-card hover:bg-white/5 transition-colors font-bold tracking-wide text-white hover:border-[#00D1FF]/50 active:scale-95 flex items-center gap-3"
               >
-                WHY IT MATTERS
-              </button>
+                <Play size={18} className="fill-current text-[#00D1FF]" />
+                WATCH THE VISION
+              </Link>
             </motion.div>
           </motion.div>
 
-          {/* Hero Animation */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.5, rotate: -10 }}
-            animate={{ opacity: 1, scale: 1, rotate: 0 }}
-            transition={{ duration: 1.2, ease: "easeOut", delay: 0.4 }}
-            className="relative hidden lg:block"
-          >
-            <div className="absolute inset-0 bg-gradient-to-tr from-[#00D1FF]/30 to-[#7000FF]/30 blur-[120px] rounded-full animate-pulse" />
-
-            {/* HUD Elements */}
+          {/* Hero Animation with Model */}
+          <div className="relative hidden lg:block">
             <motion.div
-              animate={{ y: [0, -15, 0] }}
-              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute -top-10 -right-10 p-6 rounded-3xl bg-black/40 backdrop-blur-xl border border-white/10 z-20 space-y-4 shadow-2xl"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-2 h-2 rounded-full bg-[#00D1FF] animate-pulse" />
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#00D1FF]">Neural-Link Sync</span>
-              </div>
-              <div className="w-40 h-1 bg-white/10 rounded-full overflow-hidden">
-                <motion.div
-                  animate={{ width: ["20%", "95%", "88%"] }}
-                  transition={{ duration: 10, repeat: Infinity }}
-                  className="h-full bg-gradient-to-r from-[#00D1FF] to-[#7000FF]"
-                />
-              </div>
-            </motion.div>
-
-            <motion.div
-              animate={{ x: [0, 15, 0] }}
-              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-              className="absolute -bottom-10 -left-10 p-6 rounded-3xl bg-black/40 backdrop-blur-xl border border-white/10 z-20 shadow-2xl"
-            >
-              <div className="flex items-center gap-4">
-                <div className="p-3 rounded-2xl bg-[#00D1FF]/10 text-[#00D1FF]">
-                  <Activity size={20} />
-                </div>
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Live Stream</p>
-                  <p className="text-xl font-black text-white italic">4.8 GB/s</p>
-                </div>
-              </div>
-            </motion.div>
-            <motion.div
-              animate={{
-                y: [0, -20, 0],
-                rotate: [0, 2, 0]
-              }}
-              transition={{
-                duration: 8,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
-              className="relative z-10 scale-125"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 1.2, delay: 0.5 }}
+              className="relative z-10"
             >
               <HeroScene />
-            </motion.div>
-            {/* Floating Stats Or Something */}
-            <motion.div
-              initial={{ x: 50, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: 1, duration: 0.8 }}
-              className="absolute -top-10 -right-10 glass-card p-6 rounded-[2rem] border-white/10 shadow-2xl backdrop-blur-2xl"
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 flex items-center justify-center text-emerald-400">
-                  <Activity size={24} className="animate-pulse" />
+
+              {/* HUD Elements */}
+              <motion.div
+                animate={{ y: [0, -15, 0] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute -top-10 -right-10 p-6 rounded-3xl bg-black/40 backdrop-blur-xl border border-white/10 z-20 space-y-4 shadow-2xl"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 rounded-full bg-[#00D1FF] animate-pulse" />
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#00D1FF]">Neural-Link Sync</span>
                 </div>
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-1">Neural Accuracy</p>
-                  <p className="text-xl font-black text-white italic">99.82%</p>
+                <div className="w-40 h-1 bg-white/10 rounded-full overflow-hidden">
+                  <motion.div
+                    animate={{ width: ["20%", "95%", "88%"] }}
+                    transition={{ duration: 10, repeat: Infinity }}
+                    className="h-full bg-gradient-to-r from-[#00D1FF] to-[#7000FF]"
+                  />
                 </div>
-              </div>
+              </motion.div>
+
+              <motion.div
+                animate={{ x: [0, 15, 0] }}
+                transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                className="absolute -bottom-10 -left-10 p-6 rounded-3xl bg-black/40 backdrop-blur-xl border border-white/10 z-20 shadow-2xl"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="p-3 rounded-2xl bg-[#00D1FF]/10 text-[#00D1FF]">
+                    <Activity size={20} />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Live Stream</p>
+                    <p className="text-xl font-black text-white italic">4.8 GB/s</p>
+                  </div>
+                </div>
+              </motion.div>
             </motion.div>
-          </motion.div>
+
+            {/* Background Glow */}
+            <div className="absolute inset-0 bg-gradient-to-tr from-[#00D1FF]/20 to-[#7000FF]/20 blur-[120px] rounded-full -z-10 animate-pulse" />
+          </div>
         </div>
       </section>
 
@@ -209,11 +177,9 @@ export default function Home() {
       >
         <div className="mx-auto max-w-7xl flex flex-wrap justify-between items-center gap-8">
           <motion.div
-            initial="hidden"
-            whileInView="visible"
-            variants={{
-              visible: { transition: { staggerChildren: 0.1 } }
-            }}
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
             className="flex items-center gap-12"
           >
             <StatItem label="Scans Processed" value="1.2M+" color="text-[#00D1FF]" />
@@ -463,10 +429,9 @@ function FeatureCard({ icon, title, description, delay }: { icon: React.ReactNod
 function StatItem({ label, value, color }: { label: string; value: string; color: string }) {
   return (
     <motion.div
-      variants={{
-        hidden: { opacity: 0, y: 10 },
-        visible: { opacity: 1, y: 0 }
-      }}
+      initial={{ opacity: 0, y: 10 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
       className="flex flex-col"
     >
       <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-2">{label}</span>

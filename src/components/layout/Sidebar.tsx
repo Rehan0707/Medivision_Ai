@@ -37,6 +37,14 @@ export function Sidebar() {
         { group: "CORE", name: "MRI 3D", icon: Brain, href: "/dashboard?modality=mri", roles: ["doctor", "patient"] },
         { group: "CORE", name: "CT Scan 3D", icon: Scan, href: "/dashboard?modality=ct", roles: ["doctor", "patient"] },
 
+        // LABORATORY
+        { group: "LAB", name: "Blood Tests", icon: Activity, href: "/dashboard?modality=blood", roles: ["doctor", "patient"] },
+        { group: "LAB", name: "Urine Analysis", icon: Activity, href: "/dashboard?modality=urine", roles: ["doctor", "patient"] },
+
+        // CARDIOVASCULAR
+        { group: "CARDIO", name: "ECG / EKG", icon: Activity, href: "/dashboard/signals", roles: ["doctor", "patient"] },
+        { group: "CARDIO", name: "Stress Test", icon: Activity, href: "/dashboard?modality=stress", roles: ["doctor", "patient"] },
+
         // INTELLIGENCE & RECOVERY
         { group: "INTEL", name: t("signals"), icon: Activity, href: "/dashboard/signals", roles: ["doctor", "patient"] },
         { group: "INTEL", name: t("trends"), icon: TrendingUp, href: "/dashboard/trends", roles: ["doctor", "patient"] },

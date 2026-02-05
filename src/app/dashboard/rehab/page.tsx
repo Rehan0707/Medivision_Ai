@@ -5,6 +5,8 @@ import { Zap, Calendar, Activity, CheckCircle2, ChevronRight, Play, Info, Timer,
 import { useState } from "react";
 
 import RehabExerciseScene from "@/components/animations/RehabExerciseScene";
+import RehabCalendar from "@/components/dashboard/RehabCalendar";
+import DoctorCollaboration from "@/components/dashboard/DoctorCollaboration";
 
 export default function RehabPage() {
     const exercises = [
@@ -48,17 +50,24 @@ export default function RehabPage() {
                         </div>
                     </div>
 
-                    {/* Timeline */}
+                    {/* Interactive Recovery Calendar */}
+                    <RehabCalendar />
+
+                    {/* Milestone Roadmap (Smaller) */}
                     <div className="p-10 rounded-[3rem] glass-morphism border-white/5 bg-white/[0.01]">
-                        <h3 className="text-xl font-black mb-10 flex items-center gap-3 uppercase italic">
-                            <Calendar className="text-[#00D1FF]" size={22} />
-                            Milestone Roadmap
+                        <h3 className="text-xl font-black mb-10 flex items-center gap-3 uppercase italic text-white">
+                            <Target className="text-[#7000FF]" size={22} />
+                            Functional Milestones
                         </h3>
-                        <div className="space-y-12 ml-4 border-l-2 border-white/5 pl-10 relative text-white">
-                            <Milestone date="Aug 12" title="Initial Assessment Complete" status="done" />
-                            <Milestone date="Aug 18" title="Metabolic Baseline Stabilization" status="done" />
-                            <Milestone date="Aug 25" title="Tissue Regen Phase 1" status="active" description="Current active focused phase. Optimizing for cellular regrowth." />
-                            <Milestone date="Sep 02" title="Full Functional Mobility Test" status="upcoming" />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div className="space-y-12 ml-4 border-l-2 border-white/5 pl-10 relative">
+                                <Milestone date="Aug 12" title="Initial Assessment" status="done" />
+                                <Milestone date="Aug 18" title="Baseline Stabilization" status="done" />
+                            </div>
+                            <div className="space-y-12 ml-4 border-l-2 border-white/5 pl-10 relative">
+                                <Milestone date="Aug 25" title="Tissue Regen Phase 1" status="active" />
+                                <Milestone date="Sep 02" title="Mobility Test" status="upcoming" />
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -98,6 +107,9 @@ export default function RehabPage() {
                             ))}
                         </div>
                     </div>
+
+                    {/* Doctor Collaboration Sidebar */}
+                    <DoctorCollaboration />
 
                     <div className="p-8 rounded-[2.5rem] bg-[#7000FF]/5 border border-[#7000FF]/20 group hover:bg-[#7000FF]/10 transition-colors">
                         <div className="flex items-center gap-4 text-[#7000FF] mb-4">

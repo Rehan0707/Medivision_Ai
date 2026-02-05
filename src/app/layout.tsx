@@ -19,6 +19,7 @@ export const metadata: Metadata = {
 };
 
 import { SettingsProvider } from "@/context/SettingsContext";
+import { NextAuthProvider } from "@/components/providers/NextAuthProvider";
 
 export default function RootLayout({
   children,
@@ -30,9 +31,11 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <SettingsProvider>
-          {children}
-        </SettingsProvider>
+        <NextAuthProvider>
+          <SettingsProvider>
+            {children}
+          </SettingsProvider>
+        </NextAuthProvider>
       </body>
     </html>
   );

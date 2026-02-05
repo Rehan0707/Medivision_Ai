@@ -70,7 +70,12 @@ export async function runLocalInference(imageBase64: string, modality: string): 
         xray: ["Cortical Density verified", "Trabecular Balance: Optimal", "Sub-Voxel Mesh: Intact"],
         mri: ["Vascular Flow: Laminar", "Neural Symmetry: Synchronized", "Luminance Variance: Normal"],
         ct: ["Hounsfield Delta: Stability", "Tissue Density: Homogeneous", "Fracture Probability: < 0.2%"],
-        ecg: ["Sinus Rhythm: Verified", "QRS Complex: Normal Morphology", "ST-Segment Delta: Baseline"]
+        ecg: ["Sinus Rhythm: Verified", "QRS Complex: Normal Morphology", "ST-Segment Delta: Baseline"],
+        ultrasound: ["Echoic Grain: Smooth", "Fluid Velocity: Normal", "Artifact Noise: Filtered"],
+        blood: ["Hemoglobin Hemostasis", "Leukocyte Profile: Stable", "Platelet Aggregation: Optimal"],
+        urine: ["Solute Density: Normal", "Metabolic Clarity", "PH Balance: 6.2"],
+        oncology: ["Mitotic Activity: Inactive", "Boundary Definition: Sharp", "Vascularity: Baseline"],
+        thyroid: ["T3/T4 Equilibrium", "Follicular Stability", "Glandular Volume: Within Params"]
     };
 
     return {
