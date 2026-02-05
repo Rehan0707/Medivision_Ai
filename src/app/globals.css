@@ -84,9 +84,28 @@ body {
   }
 
   .medical-grid {
-    background-size: 40px 40px;
-    background-image: linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    background-size: 50px 50px;
+  }
+
+  /* Privacy Mode Shield */
+  .privacy-mode .privacy-blur {
+    filter: blur(8px);
+    pointer-events: none;
+    user-select: none;
+    transition: filter 0.3s ease;
+  }
+
+  .privacy-mode .privacy-blur:hover {
+    filter: blur(0px);
+    /* Optional: allow peeking on hover? No, better keep it blurred for true privacy */
+  }
+
+  .privacy-mode [data-privacy="true"] {
+    filter: blur(12px) grayscale(1);
+    opacity: 0.7;
   }
 }
 
@@ -126,13 +145,14 @@ body {
 
 /* Rural Mode Adjustments */
 .rural-mode {
-  --background: 222 0% 10%;
+  --background: 0 0% 0%;
   --foreground: 0 0% 100%;
 }
 
 .rural-mode body {
   background-image: none !important;
-  background-color: #1a1a1a !important;
+  background-color: #000000 !important;
+  color: #ffffff !important;
 }
 
 .rural-mode .medical-grid {
@@ -142,9 +162,37 @@ body {
 .rural-mode .glass-morphism,
 .rural-mode .glass-card,
 .rural-mode .glass {
-  background: #2a2a2a !important;
+  background: #111111 !important;
   backdrop-filter: none !important;
-  border: 1px solid #444 !important;
+  border: 2px solid #ffffff !important;
+  box-shadow: none !important;
+}
+
+.rural-mode h1,
+.rural-mode h2,
+.rural-mode h3,
+.rural-mode h4,
+.rural-mode p,
+.rural-mode span {
+  color: #ffffff !important;
+  text-shadow: none !important;
+}
+
+.rural-mode .animate-float,
+.rural-mode .animate-pulse,
+.rural-mode .animate-spin {
+  animation: none !important;
+}
+
+.rural-mode button {
+  border: 2px solid #ffffff !important;
+  background: #000 !important;
+  color: #fff !important;
+}
+
+.rural-mode .bg-\[\#00D1FF\] {
+  background-color: #ffffff !important;
+  color: #000000 !important;
 }
 
 /* Privacy Mode Adjustments */

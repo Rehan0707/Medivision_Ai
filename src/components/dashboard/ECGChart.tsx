@@ -59,23 +59,29 @@ export default function ECGChart({ isActive, isIrregular = false }: ECGChartProp
                         <stop offset="0%" stopColor="#00D1FF" stopOpacity="0.5" />
                         <stop offset="100%" stopColor="#00D1FF" stopOpacity="0" />
                     </linearGradient>
+                    <linearGradient id="ecg-red-gradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#ff3e3e" stopOpacity="0.5" />
+                        <stop offset="100%" stopColor="#ff3e3e" stopOpacity="0" />
+                    </linearGradient>
                 </defs>
 
                 {/* Connection Line */}
                 <motion.path
                     d={`M ${points.map((p, i) => `${(i / 100) * 1000},${p}`).join(' L ')}`}
                     fill="none"
-                    stroke="#00D1FF"
-                    strokeWidth="2"
+                    stroke={isIrregular ? "#ff3e3e" : "#00D1FF"}
+                    strokeWidth={isIrregular ? "3" : "2"}
                     strokeLinejoin="round"
                     initial={false}
+                    animate={{ stroke: isIrregular ? "#ff3e3e" : "#00D1FF" }}
                 />
 
                 {/* Glow Area */}
                 <motion.path
                     d={`M 0,100 L ${points.map((p, i) => `${(i / 100) * 1000},${p}`).join(' L ')} L 1000,100 Z`}
-                    fill="url(#ecg-gradient)"
+                    fill={isIrregular ? "url(#ecg-red-gradient)" : "url(#ecg-gradient)"}
                     initial={false}
+                    animate={{ fill: isIrregular ? "url(#ecg-red-gradient)" : "url(#ecg-gradient)" }}
                 />
 
                 {/* Current Pulse Point */}

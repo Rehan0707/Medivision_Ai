@@ -3,18 +3,31 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Maximize2, MoveHorizontal, Zap } from "lucide-react";
 import { useState } from "react";
-import BoneScene from "@/components/animations/BoneScene";
 import HandScene from "@/components/animations/HandScene";
+import BrainScene from "@/components/animations/BrainScene";
+import ThoraxScene from "@/components/animations/ThoraxScene";
+import KneeScene from "@/components/animations/KneeScene";
+import SpineScene from "@/components/animations/SpineScene";
 
 interface ComparisonModalProps {
     isOpen: boolean;
     onClose: () => void;
     originalImage: string;
     detectedPart?: string;
+    hasIssue?: boolean;
 }
 
-export function ComparisonModal({ isOpen, onClose, originalImage, detectedPart = 'hand' }: ComparisonModalProps) {
+export function ComparisonModal({ isOpen, onClose, originalImage, detectedPart = 'searching', hasIssue = false }: ComparisonModalProps) {
     const [sliderPos, setSliderPos] = useState(50);
+
+    const renderScene = () => {
+        if (detectedPart.includes('brain') || detectedPart.includes('mri')) return <BrainScene hasIssue={hasIssue} />;
+        if (detectedPart.includes('hand') || detectedPart.includes('carpal')) return <HandScene hasIssue={hasIssue} />;
+        if (detectedPart.includes('knee') || detectedPart.includes('leg') || detectedPart.includes('joint')) return <KneeScene hasIssue={hasIssue} />;
+        if (detectedPart.includes('spine') || detectedPart.includes('back') || detectedPart.includes('vertebra')) return <SpineScene hasIssue={hasIssue} />;
+        if (detectedPart.includes('chest') || detectedPart.includes('lung') || detectedPart.includes('thorax') || detectedPart.includes('bone')) return <ThoraxScene hasIssue={hasIssue} />;
+        return <HandScene hasIssue={hasIssue} />; // Fallback
+    };
 
     return (
         <AnimatePresence>
@@ -29,8 +42,8 @@ export function ComparisonModal({ isOpen, onClose, originalImage, detectedPart =
                         {/* Header */}
                         <div className="p-8 border-b border-white/5 flex justify-between items-center">
                             <div>
-                                <h2 className="text-3xl font-black tracking-tight">Voxel-Sync <span className="text-[#00D1FF]">Comparison</span></h2>
-                                <p className="text-slate-500 text-sm">Synchronized analysis between 2D Diagnostic and AI 3D Reconstruction</p>
+                                <h2 className="text-3xl font-black tracking-tight text-white italic">Voxel-Sync <span className="text-[#00D1FF]">Comparison</span></h2>
+                                <p className="text-slate-500 text-sm font-bold uppercase tracking-tight">Synchronized analysis between 2D Diagnostic and AI 3D Reconstruction</p>
                             </div>
                             <button
                                 onClick={onClose}
@@ -44,7 +57,7 @@ export function ComparisonModal({ isOpen, onClose, originalImage, detectedPart =
                         <div className="flex-1 relative overflow-hidden bg-black/40">
                             {/* AI 3D Layer (Fixed at back) */}
                             <div className="absolute inset-0">
-                                {detectedPart === 'hand' ? <HandScene /> : <BoneScene />}
+                                {renderScene()}
                                 <div className="absolute top-10 right-10 z-20 bg-black/60 backdrop-blur-md px-6 py-3 rounded-2xl border border-[#00D1FF]/30">
                                     <div className="flex items-center gap-3">
                                         <Zap size={18} className="text-[#00D1FF] animate-pulse" />

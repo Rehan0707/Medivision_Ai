@@ -16,18 +16,68 @@ import {
     Microscope,
     Download
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSettings } from "@/context/SettingsContext";
 
 export default function CopilotPage() {
+    const { userRole } = useSettings();
     const [isGenerating, setIsGenerating] = useState(false);
-    const [clinicalNote, setClinicalNote] = useState("");
 
-    const generateNote = () => {
+    if (userRole !== "doctor") {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-6">
+                <div className="w-20 h-20 rounded-full bg-red-500/10 flex items-center justify-center text-red-500 border border-red-500/20">
+                    <ShieldCheck size={40} />
+                </div>
+                <h2 className="text-2xl font-black tracking-tight">Access Restricted</h2>
+                <p className="text-slate-400 max-w-md">The Doctor Co-Pilot is a clinical support tool restricted to medical professionals. Please switch to the Doctor Portal to access this feature.</p>
+            </div>
+        );
+    }
+    const [clinicalNote, setClinicalNote] = useState("");
+    const [latestScan, setLatestScan] = useState<any>(null);
+
+    useEffect(() => {
+        async function fetchLatest() {
+            try {
+                const res = await fetch('/api/scans');
+                const data = await res.json();
+                if (data && data.length > 0) setLatestScan(data[0]);
+            } catch (err) {
+                console.error("Failed to fetch latest scan:", err);
+            }
+        }
+        fetchLatest();
+    }, []);
+
+    const generateNote = async () => {
+        if (!latestScan) {
+            setClinicalNote("No scan data found in vault. Please upload a scan to generate a synthesis.");
+            return;
+        }
+
         setIsGenerating(true);
-        setTimeout(() => {
-            setClinicalNote("Patient JD-992 presents with suspected hairline fracture in the right 3rd metacarpal distal region. AI volumetric rendering (ID: #7721) confirms a 1.2mm displacement. Differential diagnosis suggests localized trauma; however, minor osteopenia markers in the proximal zone indicate a secondary metabolic check. Recommended protocol: immobilize for 14 days followed by early-stress rehab.");
+        try {
+            const res = await fetch('/api/ai/analyze', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    prompt: `As a clinical AI assistant, draft a professional medical note for Doctor review based on this scan data:
+                    Type: ${latestScan.type}
+                    Findings: ${latestScan.analysis?.findings?.join(', ')}
+                    Risk: ${latestScan.risk}
+                    Confidence: ${latestScan.analysis?.confidence}%
+                    
+                    The note should be concise, use clinical terminology, and follow a standard SOAP/consult format. Start directly with the text.`
+                })
+            });
+            const data = await res.json();
+            setClinicalNote(data.text);
+        } catch (err) {
+            setClinicalNote("Synthesis failed. Neural link interrupted.");
+        } finally {
             setIsGenerating(false);
-        }, 1500);
+        }
     };
 
     return (
@@ -154,6 +204,33 @@ export default function CopilotPage() {
                         </div>
                     </div>
 
+                    {/* Neural Consultation Chat */}
+                    <div className="p-8 rounded-[2.5rem] glass-morphism border-white/5 bg-white/[0.01] flex flex-col h-[400px]">
+                        <h4 className="text-[10px] font-black text-[#00D1FF] uppercase tracking-widest mb-6 flex items-center gap-2">
+                            <MessageSquare size={14} /> Neural Consultation
+                        </h4>
+                        <div className="flex-1 overflow-y-auto space-y-4 mb-6 pr-2 custom-scrollbar">
+                            <div className="p-4 rounded-2xl bg-white/5 border border-white/5 text-[11px] leading-relaxed text-slate-300">
+                                <span className="font-black text-[#00D1FF] block mb-1 uppercase tracking-widest">System</span>
+                                Neural link established. Case data #7721-D synchronized. Ask any clinical or radiological question.
+                            </div>
+                            <div className="p-4 rounded-2xl bg-[#00D1FF]/10 border border-[#00D1FF]/20 text-[11px] leading-relaxed text-white self-end ml-8">
+                                <span className="font-black text-[#00D1FF] block mb-1 uppercase tracking-widest">AI Synthesis</span>
+                                Based on the sub-voxel density, I recommend checking the proximal ligament for microscopic tearing.
+                            </div>
+                        </div>
+                        <div className="relative">
+                            <input
+                                type="text"
+                                placeholder="Query neural engine..."
+                                className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-xs focus:outline-none focus:border-[#00D1FF] transition-all pr-12"
+                            />
+                            <button className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-[#00D1FF] hover:scale-110 transition-all">
+                                <Zap size={16} />
+                            </button>
+                        </div>
+                    </div>
+
                     {/* Voxel Evidence */}
                     <div className="p-8 rounded-[2.5rem] glass-card border-white/5">
                         <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-6">Evidence Records</h4>
@@ -174,23 +251,12 @@ export default function CopilotPage() {
                                 <Stethoscope size={24} />
                             </div>
                             <div>
-                                <h4 className="font-black text-xl mb-2">Patient Consult</h4>
-                                <p className="text-white/70 text-sm leading-relaxed mb-8">Start a high-fidelity visual briefing with the patient to explain 3D findings.</p>
+                                <h4 className="font-black text-xl mb-2 italic">Patient Briefing</h4>
+                                <p className="text-white/70 text-sm leading-relaxed mb-8">Explain findings to the patient with AI-simplified language in real-time.</p>
                                 <button className="w-full py-4 rounded-2xl bg-white text-black font-black text-xs uppercase tracking-widest hover:px-8 transition-all">
                                     START SESSION
                                 </button>
                             </div>
-                        </div>
-                    </div>
-
-                    {/* Clinical Compliance */}
-                    <div className="p-8 rounded-[2.5rem] glass-card border-white/5 flex flex-col items-center justify-center text-center gap-4">
-                        <div className="p-4 rounded-full bg-white/5">
-                            <ShieldCheck size={32} className="text-slate-600" />
-                        </div>
-                        <div>
-                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Security Audit</p>
-                            <p className="text-[9px] text-slate-600 font-bold">ALL DATA E2E ENCRYPTED • HIPAA V2</p>
                         </div>
                     </div>
                 </div>

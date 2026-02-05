@@ -4,11 +4,23 @@ import { useEffect, useState } from "react";
 import { History, FileText, Calendar, Search, Download, ShieldCheck, Lock, MoreHorizontal, Filter, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useSettings } from "@/context/SettingsContext";
+import { PrintReport } from "@/components/dashboard/PrintReport";
 
 export default function HistoryPage() {
-    const { isPrivacyMode } = useSettings();
+    const { isPrivacyMode, userRole } = useSettings();
     const [scans, setScans] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [printingRecord, setPrintingRecord] = useState<any>(null);
+
+    useEffect(() => {
+        if (printingRecord) {
+            // Give a tiny bit of time for the component to render in the DOM
+            setTimeout(() => {
+                window.print();
+                setPrintingRecord(null);
+            }, 100);
+        }
+    }, [printingRecord]);
 
     useEffect(() => {
         async function fetchScans() {
@@ -29,8 +41,14 @@ export default function HistoryPage() {
         <div className="space-y-10 pb-12">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
                 <div>
-                    <h1 className="text-4xl font-black mb-2 tracking-tight">Diagnostic <span className="text-[#00D1FF]">Vault</span></h1>
-                    <p className="text-slate-400">End-to-end encrypted medical history and AI-verified clinical records.</p>
+                    <h1 className="text-4xl font-black mb-2 tracking-tight">
+                        {userRole === 'patient' ? 'My Medical' : 'Diagnostic'} <span className="text-[#00D1FF]">{userRole === 'patient' ? 'Vault' : 'History'}</span>
+                    </h1>
+                    <p className="text-slate-400">
+                        {userRole === 'patient'
+                            ? "Securely access your historical scans and AI interpretations."
+                            : "End-to-end encrypted medical history and AI-verified clinical records."}
+                    </p>
                 </div>
                 <div className="flex gap-4">
                     <button className="px-6 py-3 rounded-2xl bg-white/5 border border-white/10 text-xs font-black uppercase tracking-widest hover:bg-white/10 transition-all flex items-center gap-2">
@@ -128,7 +146,10 @@ export default function HistoryPage() {
                                         </td>
                                         <td className="px-10 py-8 text-right">
                                             <div className="flex justify-end gap-3 translate-x-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-0 transition-all">
-                                                <button className="p-3 rounded-xl bg-white/5 hover:bg-[#00D1FF] hover:text-black transition-all">
+                                                <button
+                                                    onClick={() => setPrintingRecord(record)}
+                                                    className="p-3 rounded-xl bg-white/5 hover:bg-[#00D1FF] hover:text-black transition-all"
+                                                >
                                                     <Download size={18} />
                                                 </button>
                                                 <button className="p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-all">
@@ -149,6 +170,20 @@ export default function HistoryPage() {
                     </button>
                 </div>
             </div>
+
+            {printingRecord && (
+                <PrintReport
+                    data={{
+                        referenceId: printingRecord.referenceId,
+                        timestamp: printingRecord.timestamp,
+                        type: printingRecord.type,
+                        patient: printingRecord.patient || "Self",
+                        risk: printingRecord.risk || "Safe",
+                        analysis: printingRecord.analysis || { confidence: 0, findings: [], recommendations: [] },
+                        summary: printingRecord.analysis?.summary
+                    }}
+                />
+            )}
         </div>
     );
 }

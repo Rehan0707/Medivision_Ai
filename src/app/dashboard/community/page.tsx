@@ -81,13 +81,22 @@ export default function CommunityPage() {
                 <div className="p-10 glass-morphism rounded-[3rem] border-[#7000FF]/20 bg-[#7000FF]/5 relative overflow-hidden flex flex-col items-center text-center justify-center group cursor-pointer shadow-2xl">
                     <div className="absolute top-0 left-0 w-full h-1 bg-[#7000FF] shadow-[0_0_20px_rgba(112,0,255,0.8)]" />
                     <Shield size={60} className="text-[#7000FF] mb-8 group-hover:scale-110 transition-transform duration-500" />
-                    <h3 className="text-2xl font-black mb-4 tracking-tight">Verified Specialist?</h3>
+                    <h3 className="text-2xl font-black mb-4 tracking-tight italic uppercase">Verified Specialist?</h3>
                     <p className="text-sm text-slate-400 leading-relaxed mb-8 font-medium">
-                        Apply for verified board access to collaborate on high-stakes clinical cases and surgical planning.
+                        Apply for verified board access to collaborate on high-stakes clinical cases and surgical planning with global specialists.
                     </p>
-                    <button className="w-full py-5 rounded-2xl bg-black text-white font-black text-xs tracking-[0.2em] uppercase border border-[#7000FF]/30 hover:border-[#7000FF] transition-all flex items-center justify-center gap-3">
+                    <button
+                        onClick={() => {
+                            alert("Identity Verification Module Initializing...\nAccessing Clinical Credential Vault...");
+                        }}
+                        className="w-full py-5 rounded-2xl bg-black text-white font-black text-xs tracking-[0.2em] uppercase border border-[#7000FF]/30 hover:border-[#7000FF] transition-all flex items-center justify-center gap-3"
+                    >
                         GET VERIFIED <ArrowRight size={16} />
                     </button>
+                    <div className="mt-8 pt-8 border-t border-white/5 w-full flex justify-between items-center text-[9px] font-black uppercase tracking-widest text-slate-600">
+                        <span>HIPAA V4 Compliant</span>
+                        <span>256-bit AES</span>
+                    </div>
                 </div>
             </div>
         </div>

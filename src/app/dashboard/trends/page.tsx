@@ -1,285 +1,135 @@
 "use client";
 
 import { motion } from "framer-motion";
-import {
-    TrendingUp,
-    AlertTriangle,
-    ArrowUpRight,
-    ArrowDownRight,
-    Activity,
-    Zap,
-    Brain,
-    ShieldCheck,
-    Calendar,
-    Target
-} from "lucide-react";
+import { TrendingUp, Calendar, Zap, Activity, Info, ArrowUpRight, ArrowDownRight, Microscope, Target } from "lucide-react";
 import { useState } from "react";
 
 export default function TrendsPage() {
-    const [activeView, setActiveView] = useState("Mobility");
+    const [timeframe, setTimeframe] = useState("6M");
 
-    const trendData = [
-        { month: "Sep", mobility: 40, inflammation: 80, recovery: 20 },
-        { month: "Oct", mobility: 45, inflammation: 70, recovery: 35 },
-        { month: "Nov", mobility: 60, inflammation: 50, recovery: 55 },
-        { month: "Dec", mobility: 75, inflammation: 30, recovery: 80 },
-        { month: "Jan", mobility: 88, inflammation: 15, recovery: 92 },
+    const metrics = [
+        { label: "Overall Health Score", value: 92, status: "increasing", color: "text-[#00D1FF]" },
+        { label: "Biomarker Stability", value: 88, status: "stable", color: "text-[#7000FF]" },
+        { label: "Recovery Efficiency", value: 94, status: "increasing", color: "text-emerald-400" }
     ];
 
     return (
         <div className="space-y-10 pb-12">
-            {/* Header */}
             <div className="flex justify-between items-end">
                 <div>
                     <h1 className="text-4xl font-black mb-2 tracking-tight">Health <span className="text-[#00D1FF]">Trends</span></h1>
-                    <p className="text-slate-400">Long-term predictive analysis of recovery and physiological data.</p>
+                    <p className="text-slate-400">Longitudinal analysis of your neural, physical, and metabolic datasets.</p>
                 </div>
-                <div className="flex gap-4">
-                    <div className="px-6 py-3 rounded-2xl glass-card flex items-center gap-3 border-[#00D1FF]/20 shadow-xl shadow-[#00D1FF]/5">
-                        <ShieldCheck size={18} className="text-[#00D1FF]" />
-                        <span className="text-[10px] font-black uppercase tracking-widest text-[#00D1FF]">Trend Analysis ACTIVE</span>
-                    </div>
+                <div className="flex bg-black/40 backdrop-blur-md p-1.5 rounded-2xl border border-white/10 shadow-xl">
+                    {["1M", "3M", "6M", "1Y"].map(tf => (
+                        <button
+                            key={tf}
+                            onClick={() => setTimeframe(tf)}
+                            className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${timeframe === tf ? 'bg-[#00D1FF] text-black shadow-lg shadow-[#00D1FF]/20' : 'text-slate-500 hover:text-white'}`}
+                        >
+                            {tf}
+                        </button>
+                    ))}
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Main Trend Chart */}
-                <div className="lg:col-span-2 space-y-8">
-                    <div className="p-10 glass-morphism rounded-[3rem] border-white/5 relative overflow-hidden h-[600px]">
-                        <div className="absolute top-0 right-0 p-10 opacity-5 pointer-events-none">
-                            <TrendingUp size={200} className="text-[#00D1FF]" />
+            {/* Top Score Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {metrics.map((m, idx) => (
+                    <motion.div
+                        key={m.label}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: idx * 0.1 }}
+                        className="p-8 rounded-[3rem] glass-morphism border-white/5 relative overflow-hidden group"
+                    >
+                        <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 blur-3xl rounded-full" />
+                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">{m.label}</p>
+                        <div className="flex items-baseline gap-4 mb-6">
+                            <span className={`text-5xl font-black italic tracking-tighter ${m.color}`}>{m.value}</span>
+                            <span className="text-xs font-bold text-slate-500 uppercase">/ 100</span>
                         </div>
-
-                        <div className="flex justify-between items-center mb-12">
-                            <div className="flex gap-4">
-                                {["Mobility", "Healing", "Inflammation"].map(v => (
-                                    <button
-                                        key={v}
-                                        onClick={() => setActiveView(v)}
-                                        className={`px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${activeView === v
-                                                ? "bg-white text-black shadow-2xl scale-105"
-                                                : "text-slate-500 hover:text-white bg-white/5"
-                                            }`}
-                                    >
-                                        {v}
-                                    </button>
-                                ))}
-                            </div>
-                            <div className="flex items-center gap-4 text-xs font-bold text-slate-500">
-                                <span className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-[#00D1FF]" /> Observed</span>
-                                <span className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-[#7000FF] opacity-30" /> Predicted</span>
+                        <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
+                            <span className="text-slate-500">TRAJECTORY</span>
+                            <div className="flex items-center gap-2 text-emerald-400">
+                                <TrendingUp size={14} />
+                                +12% VS LAST QTR
                             </div>
                         </div>
+                    </motion.div>
+                ))}
+            </div>
 
-                        {/* Custom SVG Chart */}
-                        <div className="h-[300px] w-full relative group">
-                            <svg className="w-full h-full" viewBox="0 0 1000 300" preserveAspectRatio="none">
-                                <defs>
-                                    <linearGradient id="trend-grad" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="0%" stopColor="#00D1FF" stopOpacity="0.4" />
-                                        <stop offset="100%" stopColor="#00D1FF" stopOpacity="0" />
-                                    </linearGradient>
-                                </defs>
-
-                                {/* Grid Lines */}
-                                {[0, 1, 2, 3].map(i => (
-                                    <line key={i} x1="0" y1={i * 100} x2="1000" y2={i * 100} stroke="white" strokeOpacity="0.05" strokeWidth="1" />
-                                ))}
-
-                                {/* Data Path */}
-                                <motion.path
-                                    initial={{ pathLength: 0 }}
-                                    animate={{ pathLength: 1 }}
-                                    transition={{ duration: 2, ease: "easeOut" }}
-                                    d="M 50,250 L 250,220 L 450,150 L 650,100 L 850,40"
-                                    fill="none"
-                                    stroke="#00D1FF"
-                                    strokeWidth="4"
-                                    strokeLinecap="round"
-                                />
-
-                                {/* Area Fill */}
-                                <motion.path
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    transition={{ delay: 1 }}
-                                    d="M 50,250 L 250,220 L 450,150 L 650,100 L 850,40 L 850,300 L 50,300 Z"
-                                    fill="url(#trend-grad)"
-                                />
-
-                                {/* Prediction Line (Dashed) */}
-                                <line x1="850" y1="40" x2="980" y2="10" stroke="#7000FF" strokeWidth="2" strokeDasharray="8,8" />
-
-                                {/* Points */}
-                                {[50, 250, 450, 650, 850].map((x, i) => (
-                                    <g key={i}>
-                                        <circle cx={x} cy={[250, 220, 150, 100, 40][i]} r="6" fill="#00D1FF" className="shadow-lg" />
-                                        <circle cx={x} cy={[250, 220, 150, 100, 40][i]} r="12" fill="#00D1FF" fillOpacity="0.1" className="animate-pulse" />
-                                    </g>
-                                ))}
-                            </svg>
-
-                            <div className="flex justify-between mt-8 px-4">
-                                {trendData.map(d => (
-                                    <div key={d.month} className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{d.month}</div>
-                                ))}
-                                <div className="text-[10px] font-black text-[#7000FF] uppercase tracking-widest">Feb (Exp)</div>
-                            </div>
-                        </div>
-
-                        {/* Stats Row */}
-                        <div className="grid grid-cols-3 gap-8 mt-16 pt-12 border-t border-white/5">
-                            <TrendSmallStat label="Net Recovery" value="+48%" icon={<ArrowUpRight size={14} />} color="text-emerald-400" />
-                            <TrendSmallStat label="Peak Progress" value="Dec 24" icon={<Calendar size={14} />} color="text-[#00D1FF]" />
-                            <TrendSmallStat label="Risk Variance" value="-12%" icon={<ArrowDownRight size={14} />} color="text-[#00D1FF]" />
-                        </div>
+            {/* Visual Analytics */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="p-10 rounded-[3.5rem] glass-card border-white/5 bg-white/[0.01]">
+                    <h3 className="text-xl font-black mb-10 flex items-center gap-3 uppercase italic">
+                        <Activity className="text-[#00D1FF]" size={22} />
+                        Neural Vigor Index
+                    </h3>
+                    <div className="h-64 flex items-end justify-between gap-4 px-4 pb-4 border-b border-l border-white/5">
+                        {[45, 62, 58, 75, 82, 94, 88].map((h, i) => (
+                            <motion.div
+                                key={i}
+                                initial={{ height: 0 }}
+                                animate={{ height: `${h}%` }}
+                                transition={{ delay: 0.5 + (i * 0.1), duration: 1, ease: "circOut" }}
+                                className="w-full bg-gradient-to-t from-[#00D1FF]/20 to-[#00D1FF] rounded-t-xl group relative"
+                            >
+                                <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-white text-black text-[9px] font-black px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
+                                    {h}%
+                                </div>
+                            </motion.div>
+                        ))}
                     </div>
-
-                    <div className="grid grid-cols-2 gap-8">
-                        <div className="p-10 rounded-[3rem] glass-card">
-                            <h3 className="text-xl font-black mb-6 flex items-center gap-3">
-                                <Zap className="text-yellow-400" size={22} />
-                                Efficiency Score
-                            </h3>
-                            <div className="flex items-center gap-8">
-                                <div className="relative w-32 h-32">
-                                    <svg className="w-full h-full -rotate-90">
-                                        <circle cx="64" cy="64" r="58" fill="transparent" stroke="white" strokeOpacity="0.05" strokeWidth="12" />
-                                        <motion.circle
-                                            initial={{ strokeDashoffset: 364 }}
-                                            animate={{ strokeDashoffset: 364 - (364 * 0.92) }}
-                                            transition={{ duration: 2 }}
-                                            cx="64" cy="64" r="58" fill="transparent" stroke="#00D1FF" strokeWidth="12" strokeDasharray="364" strokeLinecap="round" />
-                                    </svg>
-                                    <div className="absolute inset-0 flex items-center justify-center">
-                                        <span className="text-2xl font-black text-white">92%</span>
-                                    </div>
-                                </div>
-                                <div className="space-y-4">
-                                    <p className="text-sm text-slate-400 leading-relaxed">
-                                        Your body is responding to rehabilitation protocols faster than 85% of patients in your demographic.
-                                    </p>
-                                    <div className="flex items-center gap-2 text-[10px] font-black text-emerald-400 uppercase tracking-widest">
-                                        <Target size={12} /> Optimal Response Detected
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="p-10 rounded-[3rem] glass-card">
-                            <h3 className="text-xl font-black mb-6 flex items-center gap-3">
-                                <Activity className="text-[#7000FF]" size={22} />
-                                Neural Continuity
-                            </h3>
-                            <div className="space-y-6">
-                                <div className="flex justify-between items-end">
-                                    <div>
-                                        <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest mb-1">Signal Stability</p>
-                                        <p className="text-2xl font-black">98.4%</p>
-                                    </div>
-                                    <div className="h-10 w-32 flex items-end gap-1">
-                                        {[40, 70, 45, 90, 65, 80, 55, 95].map((h, i) => (
-                                            <motion.div
-                                                key={i}
-                                                initial={{ height: 0 }}
-                                                animate={{ height: `${h}%` }}
-                                                transition={{ delay: i * 0.1 }}
-                                                className="flex-1 bg-gradient-to-t from-[#7000FF]/20 to-[#7000FF] rounded-t-sm"
-                                            />
-                                        ))}
-                                    </div>
-                                </div>
-                                <p className="text-xs text-slate-500 leading-relaxed italic">
-                                    "Long-term variability indicates a stabilized autonomic response after Week 4 intervention."
-                                </p>
-                            </div>
-                        </div>
+                    <div className="flex justify-between mt-6 px-4 text-[10px] font-black text-slate-600 uppercase tracking-[0.2em]">
+                        <span>Jan</span>
+                        <span>Feb</span>
+                        <span>Mar</span>
+                        <span>Apr</span>
+                        <span>May</span>
+                        <span>Jun</span>
+                        <span>Jul</span>
                     </div>
                 </div>
 
-                {/* AI Predictive Sidebar */}
-                <div className="space-y-8">
-                    <div className="p-10 rounded-[3rem] glass-morphism border-[#7000FF]/20 relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-[#7000FF]/5 blur-[60px] rounded-full" />
-
-                        <div className="flex items-center gap-4 mb-10">
-                            <div className="w-14 h-14 rounded-2xl bg-[#7000FF]/10 flex items-center justify-center text-[#7000FF] border border-[#7000FF]/20">
-                                <Brain size={28} />
-                            </div>
-                            <div>
-                                <h3 className="font-black text-2xl tracking-tight">AI Prognosis</h3>
-                                <p className="text-[10px] text-slate-500 uppercase tracking-[0.3em] font-black">TREND-V2</p>
-                            </div>
-                        </div>
-
-                        <div className="space-y-8">
-                            <div className="p-6 rounded-3xl bg-white/[0.03] border border-white/5 space-y-4">
-                                <div className="flex items-center gap-3 text-emerald-400">
-                                    <TrendingUp size={18} />
-                                    <span className="text-xs font-black uppercase tracking-widest">Positive Trajectory</span>
-                                </div>
-                                <p className="text-sm text-slate-300 leading-relaxed">
-                                    Based on current volumetric data, full mechanical integrity of the {activeView.toLowerCase()} cycle is expected by **Feb 18, 2026**.
-                                </p>
-                            </div>
-
-                            <div className="p-6 rounded-3xl bg-amber-500/5 border border-amber-500/10 space-y-4">
-                                <div className="flex items-center gap-3 text-amber-400">
-                                    <AlertTriangle size={18} />
-                                    <span className="text-xs font-black uppercase tracking-widest">Predictive Risk</span>
-                                </div>
-                                <p className="text-sm text-slate-300 leading-relaxed">
-                                    Possible stagnation in distal mobility detected if daily stress cycles exceed **14% variability**.
-                                </p>
-                                <button className="text-[10px] font-black text-amber-400 uppercase tracking-widest hover:underline">
-                                    Adjust Protocol →
-                                </button>
-                            </div>
-
-                            <div className="space-y-4 pt-4">
-                                <button className="w-full py-5 rounded-2xl bg-white text-black font-black text-sm tracking-wide hover:scale-105 transition-all shadow-2xl">
-                                    GENERATE TREND REPORT
-                                </button>
-                                <button className="w-full py-5 rounded-2xl border border-white/10 font-bold text-sm bg-white/5 hover:bg-white/10 transition-colors">
-                                    SYNC CLINICAL DATA
-                                </button>
-                            </div>
-                        </div>
+                <div className="p-10 rounded-[3.5rem] glass-card border-white/5 flex flex-col justify-between">
+                    <div>
+                        <h3 className="text-xl font-black mb-4 flex items-center gap-3 uppercase italic">
+                            <Target className="text-[#7000FF]" size={22} />
+                            Predictive Insights
+                        </h3>
+                        <p className="text-slate-400 text-sm leading-relaxed mb-10 font-medium">AI has identified patterns that suggest a 15% improvement in cardiovascular endurance if current recovery metrics persist.</p>
                     </div>
-
-                    <div className="p-10 rounded-[3rem] glass-card border-white/5">
-                        <h4 className="font-black text-slate-500 uppercase tracking-widest text-[10px] mb-8">Data Sources</h4>
-                        <div className="space-y-6">
-                            <SourceItem icon={<Activity size={14} />} name="Physiological Stream" date="Live" />
-                            <SourceItem icon={<TrendingUp size={14} />} name="3D Volumetric History" date="Jan 28" />
-                            <SourceItem icon={<ShieldCheck size={14} />} name="Clinical Lab Record" date="Jan 15" />
-                        </div>
+                    <div className="space-y-4">
+                        <InsightItem label="Metabolic Optimization" percentage={92} color="bg-[#00D1FF]" />
+                        <InsightItem label="Oxygen Carriage Highs" percentage={76} color="bg-[#7000FF]" />
+                        <InsightItem label="Tissue Regeneration" percentage={84} color="bg-emerald-400" />
                     </div>
+                    <button className="w-full py-5 rounded-3xl bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-[0.3em] mt-10 hover:bg-white/10 transition-all">
+                        VIEW FULL PROJECTION
+                    </button>
                 </div>
             </div>
         </div>
     );
 }
 
-function TrendSmallStat({ label, value, icon, color }: { label: string, value: string, icon: any, color: string }) {
+function InsightItem({ label, percentage, color }: { label: string, percentage: number, color: string }) {
     return (
-        <div className="text-center">
-            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">{label}</p>
-            <div className={`text-2xl font-black flex items-center justify-center gap-2 ${color}`}>
-                {value}
-                <span className="opacity-50">{icon}</span>
+        <div className="space-y-3">
+            <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-slate-500">
+                <span>{label}</span>
+                <span className="text-white">{percentage}%</span>
             </div>
-        </div>
-    );
-}
-
-function SourceItem({ icon, name, date }: { icon: any, name: string, date: string }) {
-    return (
-        <div className="flex justify-between items-center group cursor-pointer">
-            <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-white/5 text-slate-500 group-hover:text-[#00D1FF] transition-colors">{icon}</div>
-                <span className="text-xs font-bold text-slate-300">{name}</span>
+            <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${percentage}%` }}
+                    transition={{ delay: 1, duration: 1.5 }}
+                    className={`h-full ${color}`}
+                />
             </div>
-            <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest">{date}</span>
         </div>
     );
 }

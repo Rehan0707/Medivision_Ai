@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 
 type Language = "en" | "hi" | "mr" | "ta";
+type UserRole = "doctor" | "patient" | "admin";
 
 const translations = {
     en: {
@@ -23,6 +24,18 @@ const translations = {
         settings: "Settings",
         trends: "Health Trends",
         predictiveInsights: "Predictive Insights",
+        lowBandwidth: "Low Bandwidth Active",
+        highContrast: "High Contrast Enabled",
+        doctorPortal: "Doctor Portal",
+        patientPortal: "Patient Portal",
+        adminPortal: "Admin Control",
+        userManagement: "Users",
+        systemStatus: "System",
+        securityAudit: "Audit Log",
+        myScans: "My Scans",
+        recoveryPath: "Recovery Path",
+        myReports: "My Reports",
+        expertNetwork: "Expert Network",
     },
     hi: {
         dashboard: "डैशबोर्ड",
@@ -42,6 +55,18 @@ const translations = {
         settings: "सेटिंग्स",
         trends: "स्वास्थ्य रुझान",
         predictiveInsights: "भविष्य कहनेवाला अंतर्दृष्टि",
+        lowBandwidth: "कम बैंडविड्थ सक्रिय",
+        highContrast: "उच्च कंट्रास्ट सक्षम",
+        doctorPortal: "डॉक्टर पोर्टल",
+        patientPortal: "मरीज पोर्टल",
+        adminPortal: "एडमिन नियंत्रण",
+        userManagement: "उपयोगकर्ता",
+        systemStatus: "सिस्टम",
+        securityAudit: "सुरक्षा ऑडिट",
+        myScans: "मेरे स्कैन",
+        recoveryPath: "रिकवरी पथ",
+        myReports: "मेरी रिपोर्ट",
+        expertNetwork: "विशेषज्ञ नेटवर्क",
     },
     mr: {
         dashboard: "डॅशबोर्ड",
@@ -61,6 +86,18 @@ const translations = {
         settings: "सेटिंग्ज",
         trends: "आरोग्य कल",
         predictiveInsights: "भविष्यवाणी अंतर्दृष्टी",
+        lowBandwidth: "कमी बँडविड्थ सक्रिय",
+        highContrast: "उच्च कॉन्ट्रास्ट सक्षम",
+        doctorPortal: "डॉक्टर पोर्टल",
+        patientPortal: "रुग्ण पोर्टल",
+        adminPortal: "प्रशासक नियंत्रण",
+        userManagement: "वापरकर्ते",
+        systemStatus: "सिस्टम",
+        securityAudit: "सुरक्षा ऑडिट",
+        myScans: "माझे स्कॅन्स",
+        recoveryPath: "रिकव्हरी पथ",
+        myReports: "माझे अहवाल",
+        expertNetwork: "तज्ञ नेटवर्क",
     },
     ta: {
         dashboard: "டாஷ்போர்டு",
@@ -80,12 +117,26 @@ const translations = {
         settings: "அமைப்புகள்",
         trends: "சுகாதார போக்குகள்",
         predictiveInsights: "முன்கணிப்பு நுண்ணறிவு",
+        lowBandwidth: "குறைந்த அலைவரிசை செயலில் உள்ளது",
+        highContrast: "உயர் மாறுபாடு இயக்கப்பட்டது",
+        doctorPortal: "மருத்துவர் போர்டல்",
+        patientPortal: "நோயாளி போர்டல்",
+        adminPortal: "நிர்வாகக் கட்டுப்பாடு",
+        userManagement: "பயனர்கள்",
+        systemStatus: "அமைப்பு",
+        securityAudit: "பாதுகாப்பு தணிக்கை",
+        myScans: "எனது ஸ்கேன்கள்",
+        recoveryPath: "மீட்பு பாதை",
+        myReports: "எனது அறிக்கைகள்",
+        expertNetwork: "நிபுணர் நெட்வொர்க்",
     }
 };
 
 interface SettingsContextType {
     language: Language;
     setLanguage: (lang: Language) => void;
+    userRole: UserRole;
+    setUserRole: (role: UserRole) => void;
     isRuralMode: boolean;
     setIsRuralMode: (val: boolean) => void;
     isPrivacyMode: boolean;
@@ -97,6 +148,7 @@ const SettingsContext = createContext<SettingsContextType | undefined>(undefined
 
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
     const [language, setLanguage] = useState<Language>("en");
+    const [userRole, setUserRole] = useState<UserRole>("doctor");
     const [isRuralMode, setIsRuralMode] = useState(false);
     const [isPrivacyMode, setIsPrivacyMode] = useState(false);
 
@@ -104,7 +156,6 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         return translations[language][key] || translations.en[key];
     };
 
-    // Apply global classes for Rural Mode and Privacy Mode
     useEffect(() => {
         if (isRuralMode) {
             document.documentElement.classList.add("rural-mode");
@@ -126,6 +177,8 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
             value={{
                 language,
                 setLanguage,
+                userRole,
+                setUserRole,
                 isRuralMode,
                 setIsRuralMode,
                 isPrivacyMode,
