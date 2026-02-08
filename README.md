@@ -1,35 +1,49 @@
 # MediVision AI
 
-**MediVision AI** is a cutting-edge medical visualization and decision-support platform built for health-tech hackathons. It transforms complex medical scans (X-rays, MRIs, CT scans) into interactive 3D models and provides plain-English diagnostics to bridge the gap between doctors and patients.
+**MediVision AI** is a cutting-edge medical visualization and decision-support platform. This project is organized with a proper frontend-backend separation using a monorepo structure.
+
+## 📁 Project Structure
+
+- **`frontend/`**: Next.js 14 web application (UI, 3D Engine, Auth).
+- **`backend/`**: Express.js server (API, Database management, AI processing).
+- **`packages/shared/`**: Shared TypeScript types and utility functions used by both frontend and backend.
+- **`docs/`**: Project documentation and implementation plans.
 
 ## 🚀 Features
 
-- **AI X-Ray → 3D Bone Reconstruction**: Converts 2D scans into interactive 3D models with injury highlighting.
-- **Medical Machine Reading**: Explains ECG, BP monitors, and Lab reports in plain English.
-- **AI Rehab Simulator**: Provides non-surgical fixes and recovery exercise demonstrations.
-- **Doctor Co-Pilot**: AI assistance for differential diagnosis and risk scoring.
-- **Social Impact Mode**: Multi-language support (Hindi, Marathi, Tamil) for rural accessibility.
-- **HIPAA Aware**: Designed with privacy, encryption, and anonymization at its core.
+- **AI X-Ray → 3D Bone Reconstruction**: Converts 2D scans into interactive 3D models.
+- **Medical Machine Reading**: Explains ECG, BP monitors, and Lab reports.
+- **AI Rehab Simulator**: Recovery guide and exercise demonstrations.
+- **Doctor Co-Pilot**: AI assistance for differential diagnosis.
 
 ## 🛠 Tech Stack
 
-- **Frontend**: Next.js 14, Tailwind CSS, Framer Motion
-- **3D Engine**: Three.js, React Three Fiber
-- **Icons**: Lucide React
-- **AI Integration**: OpenAI (Simulated logic for hackathon demonstration)
+- **Frontend**: Next.js, React, Three.js, Tailwind CSS, Framer Motion.
+- **Backend**: Node.js, Express, MongoDB.
+- **Language**: TypeScript throughout.
 
 ## 📦 Getting Started
 
-1. Clone the repository
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Run the development server:
-   ```bash
-   npm run dev
-   ```
-4. Open [http://localhost:3000](http://localhost:3000)
+### 1. Prerequisites
+- Node.js (v18+)
+- MongoDB (Running locally or on Atlas)
+
+### 2. Installation
+From the root directory, run:
+```bash
+npm install
+```
+
+### 3. Running the Project
+You can run both frontend and backend simultaneously:
+```bash
+npm run dev
+```
+
+Or run them individually:
+- Frontend: `npm run dev:frontend`
+- Backend: `npm run dev:backend`
 
 ## 🛡 License
 MIT License
+

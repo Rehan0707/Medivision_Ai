@@ -1,36 +1,19 @@
 {
-  "name": "four-vision",
-  "version": "0.1.0",
+  "name": "medivision-ai",
+  "version": "1.0.0",
+  "description": "MediVision AI - Proper Frontend/Backend Structure",
   "private": true,
+  "workspaces": [
+    "frontend",
+    "backend",
+    "packages/*"
+  ],
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
-  },
-  "dependencies": {
-    "@google/generative-ai": "^0.24.1",
-    "@react-three/drei": "^10.7.7",
-    "@react-three/fiber": "^8.18.0",
-    "clsx": "^2.1.1",
-    "framer-motion": "^12.29.2",
-    "lucide-react": "^0.563.0",
-    "mongodb": "^7.0.0",
-    "next": "14.2.35",
-    "next-auth": "^4.24.13",
-    "react": "^18",
-    "react-dom": "^18",
-    "tailwind-merge": "^3.4.0",
-    "three": "^0.182.0"
-  },
-  "devDependencies": {
-    "@types/node": "^20",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
-    "eslint": "^8",
-    "eslint-config-next": "14.2.35",
-    "postcss": "^8",
-    "tailwindcss": "^3.4.1",
-    "typescript": "^5"
+    "dev:frontend": "npm run dev --workspace=frontend",
+    "dev:backend": "npm run dev --workspace=backend",
+    "dev": "npm run dev:frontend & npm run dev:backend",
+    "install:all": "npm install && npm install --workspace=frontend && npm install --workspace=backend",
+    "build:frontend": "npm run build --workspace=frontend",
+    "lint:frontend": "npm run lint --workspace=frontend"
   }
 }
