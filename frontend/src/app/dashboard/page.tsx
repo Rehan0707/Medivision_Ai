@@ -169,26 +169,7 @@ function DashboardContent() {
             category: "Cardiac & Vascular",
             items: [
                 { id: "ecg", name: "ECG / EKG", icon: <HeartPulse size={24} />, description: "Electrical rhythm tracking.", color: "text-rose-500", bg: "bg-rose-500/5", border: "border-rose-500/20" },
-                { id: "echo", name: "Echocardiogram", icon: <Activity size={24} />, description: "Valve & chamber imaging.", color: "text-pink-500", bg: "bg-pink-500/5", border: "border-pink-500/20" },
-                { id: "stress", name: "Stress Test", icon: <Zap size={24} />, description: "Cardiac load performance.", color: "text-emerald-500", bg: "bg-emerald-500/5", border: "border-emerald-500/20" },
-                { id: "holter", name: "Holter Monitoring", icon: <Activity size={24} />, description: "Continuous rhythm audit.", color: "text-blue-500", bg: "bg-blue-500/5", border: "border-blue-500/20" }
-            ]
-        },
-        {
-            category: "Pulmonary & Sleep",
-            items: [
-                { id: "pft", name: "Pulmonary Test (PFT)", icon: <Waves size={24} />, description: "Lung capacity & airflow.", color: "text-cyan-300", bg: "bg-cyan-300/5", border: "border-cyan-300/20" },
-                { id: "spirometry", name: "Spirometry", icon: <Activity size={24} />, description: "Breath force analytics.", color: "text-teal-400", bg: "bg-teal-400/5", border: "border-teal-400/20" },
-                { id: "sleep", name: "Sleep Study", icon: <Activity size={24} />, description: "Nocturnal neural patterns.", color: "text-indigo-400", bg: "bg-indigo-400/5", border: "border-indigo-400/20" }
-            ]
-        },
-        {
-            category: "Clinical Documents & Surgery",
-            items: [
-                { id: "discharge", name: "Discharge Summary", icon: <FileText size={24} />, description: "Post-op care directives.", color: "text-slate-400", bg: "bg-slate-400/5", border: "border-slate-400/20" },
-                { id: "operation", name: "Operation Notes", icon: <ClipboardList size={24} />, description: "Surgical procedure logs.", color: "text-slate-500", bg: "bg-slate-400/5", border: "border-slate-400/20" },
-                { id: "clinical", name: "Clinical Notes", icon: <FileText size={24} />, description: "Specialist observation logs.", color: "text-slate-600", bg: "bg-slate-400/5", border: "border-slate-400/20" },
-                { id: "prescription", name: "Prescriptions", icon: <Pill size={24} />, description: "Neural-pharmacy orders.", color: "text-emerald-400", bg: "bg-emerald-400/5", border: "border-emerald-400/20" }
+                { id: "stress", name: "Stress Test", icon: <Zap size={24} />, description: "Cardiac load performance.", color: "text-emerald-500", bg: "bg-emerald-500/5", border: "border-emerald-500/20" }
             ]
         },
         {
@@ -222,24 +203,8 @@ function DashboardContent() {
         Return ONLY valid JSON: {"detectedPart":"thyroid","preciseAbnormality":"string or 'Normal'","preciseLocation":"Endocrine","findings":[],"recommendations":[],"summary":"Plain English summary","confidence":0.0-1.0}`,
         hormone: `This is a HORMONE TEST report. Extract values, identify imbalances.
         Return ONLY valid JSON: {"detectedPart":"endocrine","preciseAbnormality":"string or 'Normal'","preciseLocation":"Systemic","findings":[],"recommendations":[],"summary":"Plain English summary","confidence":0.0-1.0}`,
-        echo: `This is an ECHOCARDIOGRAM report/image. Extract EF%, chamber sizes, valve findings.
-        Return ONLY valid JSON: {"detectedPart":"heart","preciseAbnormality":"string or 'Normal'","preciseLocation":"Cardiac","findings":[],"recommendations":[],"summary":"Plain English summary","confidence":0.0-1.0}`,
         stress: `This is a STRESS TEST report. Extract exercise capacity, ECG changes, symptoms.
         Return ONLY valid JSON: {"detectedPart":"heart","preciseAbnormality":"string or 'Normal'","preciseLocation":"Cardiac","findings":[],"recommendations":[],"summary":"Plain English summary","confidence":0.0-1.0}`,
-        holter: `This is a HOLTER MONITORING report. Extract rhythm summary, arrhythmia findings.
-        Return ONLY valid JSON: {"detectedPart":"heart","preciseAbnormality":"string or 'Normal'","preciseLocation":"Cardiac","findings":[],"recommendations":[],"summary":"Plain English summary","confidence":0.0-1.0}`,
-        pft: `This is a PULMONARY FUNCTION (PFT) report. Extract FEV1, FVC, ratios. Identify obstruction/restriction.
-        Return ONLY valid JSON: {"detectedPart":"lung","preciseAbnormality":"string or 'Normal'","preciseLocation":"Pulmonary","findings":[],"recommendations":[],"summary":"Plain English summary","confidence":0.0-1.0}`,
-        spirometry: `This is a SPIROMETRY report. Extract flow rates, volumes.
-        Return ONLY valid JSON: {"detectedPart":"lung","preciseAbnormality":"string or 'Normal'","preciseLocation":"Pulmonary","findings":[],"recommendations":[],"summary":"Plain English summary","confidence":0.0-1.0}`,
-        sleep: `This is a SLEEP STUDY report (polysomnography). Extract AHI, oxygen dips, sleep stages.
-        Return ONLY valid JSON: {"detectedPart":"sleep","preciseAbnormality":"string or 'Normal'","preciseLocation":"Neurological","findings":[],"recommendations":[],"summary":"Plain English summary","confidence":0.0-1.0}`,
-        discharge: `This is a DISCHARGE SUMMARY. Extract diagnosis, procedures, medications, follow-up instructions.
-        Return ONLY valid JSON: {"detectedPart":"clinical","preciseAbnormality":"string or 'Routine'","preciseLocation":"Hospital","findings":[],"recommendations":[],"summary":"Plain English summary","confidence":0.0-1.0}`,
-        operation: `This is an OPERATION NOTE. Extract procedure, findings, post-op plan.
-        Return ONLY valid JSON: {"detectedPart":"clinical","preciseAbnormality":"string or 'Routine'","preciseLocation":"Surgical","findings":[],"recommendations":[],"summary":"Plain English summary","confidence":0.0-1.0}`,
-        clinical: `This is a CLINICAL NOTE. Extract key observations, assessment, plan.
-        Return ONLY valid JSON: {"detectedPart":"clinical","preciseAbnormality":"string or 'Routine'","preciseLocation":"Consultation","findings":[],"recommendations":[],"summary":"Plain English summary","confidence":0.0-1.0}`,
         prescription: `This is a PRESCRIPTION. Extract medications, dosage, instructions.
         Return ONLY valid JSON: {"detectedPart":"clinical","preciseAbnormality":"string or 'Routine'","preciseLocation":"Pharmacy","findings":[],"recommendations":[],"summary":"Plain English summary","confidence":0.0-1.0}`,
         oncology: `This is an ONCOLOGY report. Extract tumor markers, staging, treatment status.

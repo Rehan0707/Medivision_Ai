@@ -160,9 +160,7 @@ export function PatientDashboard({ t, profile, latestScan }: { t: (key: any) => 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     <NavCategory title="Imaging & Radiology" items={["X-ray", "CT Scan", "MRI", "Sonography (Ultrasound)", "PET Scan", "Mammography"]} color="border-[#00D1FF]/30" accent="text-[#00D1FF]" />
                     <NavCategory title="Laboratory & Bloodwork" items={["Blood tests (CBC, Sugar, Lipid)", "Urine tests", "Liver function tests", "Kidney function tests", "Thyroid tests", "Hormone tests"]} color="border-[#7000FF]/30" accent="text-[#7000FF]" />
-                    <NavCategory title="Cardiac Diagnostics" items={["ECG / EKG", "Echocardiogram", "Stress test", "Holter monitoring"]} color="border-rose-500/30" accent="text-rose-500" />
-                    <NavCategory title="Pulmonary & Sleep" items={["Pulmonary function test (PFT)", "Spirometry", "Sleep study reports"]} color="border-emerald-500/30" accent="text-emerald-500" />
-                    <NavCategory title="Clinical & Surgery" items={["Discharge summary", "Operation notes", "Clinical notes", "Prescription reports"]} color="border-amber-500/30" accent="text-amber-500" />
+                    <NavCategory title="Cardiac Diagnostics" items={["ECG / EKG", "Stress test"]} color="border-rose-500/30" accent="text-rose-500" />
                     <NavCategory title="Advanced Specialists" items={["Oncology reports", "Histopathology (biopsy)", "Genetic testing", "Allergy testing"]} color="border-fuchsia-500/30" accent="text-fuchsia-500" />
                 </div>
             </div>
