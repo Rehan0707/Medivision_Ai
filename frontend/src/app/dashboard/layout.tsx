@@ -16,12 +16,9 @@ export default function DashboardLayout({
     const { userRole } = useSettings();
     const pathname = usePathname();
 
-    // Define access rules
+    // Define access rules - admin routes protected; all other routes available to everyone
     const isAuthorized = () => {
         if (pathname.startsWith("/dashboard/admin") && userRole !== "admin") return false;
-        if (pathname.startsWith("/dashboard/copilot") && userRole !== "doctor") return false;
-        if (pathname.startsWith("/dashboard/community") && userRole !== "doctor") return false;
-        // Patients can access most other things like rehab, signals, history, etc.
         return true;
     };
 

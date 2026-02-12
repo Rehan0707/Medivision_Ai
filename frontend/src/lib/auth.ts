@@ -18,7 +18,8 @@ export const authOptions: NextAuthOptions = {
                 if (!credentials?.email || !credentials?.password) return null;
 
                 try {
-                    const res = await fetch("http://localhost:5001/api/auth/login", {
+                    const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+                    const res = await fetch(`${apiBase}/api/auth/login`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({
@@ -47,13 +48,38 @@ export const authOptions: NextAuthOptions = {
         signIn: "/auth",
     },
     callbacks: {
+        async signIn({ user, account }) {
+            if (account?.provider === 'google' && user?.email) {
+                try {
+                    const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+                    const res = await fetch(`${apiBase}/api/auth/google`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            email: user.email,
+                            name: user.name,
+                            image: user.image,
+                        }),
+                    });
+                    const data = await res.json();
+                    if (data.token) {
+                        (user as any).accessToken = data.token;
+                        (user as any).role = data.role || 'Patient';
+                        (user as any).profile = data.profile;
+                    }
+                } catch (e) {
+                    console.warn("Google auth sync failed:", e);
+                }
+            }
+            return true;
+        },
         async jwt({ token, user }) {
             if (user) {
-                token.role = (user as any).role;
-                token.status = (user as any).status;
-                token.isApproved = (user as any).isApproved;
+                token.role = (user as any).role || 'Patient';
+                token.status = (user as any).status || 'Approved';
+                token.isApproved = (user as any).isApproved ?? true;
                 token.profile = (user as any).profile;
-                token.accessToken = (user as any).token; // This is the JWT from the backend
+                token.accessToken = (user as any).accessToken || (user as any).token;
             }
             return token;
         },

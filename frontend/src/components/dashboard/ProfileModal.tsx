@@ -97,7 +97,7 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                             <div>
                                 <h2 className="text-2xl font-black italic uppercase tracking-tighter">Clinical <span className="text-[#00D1FF]">Profile</span></h2>
                                 <div className="flex items-center gap-2 mt-1">
-                                    <div className={`w-1.5 h-1.5 rounded-full ${role === 'Admin' ? 'bg-[#7000FF]' : role === 'Doctor' ? 'bg-[#00D1FF]' : 'bg-emerald-500'} animate-pulse`} />
+                                    <div className={`w-1.5 h-1.5 rounded-full ${role === 'Admin' ? 'bg-[#7000FF]' : 'bg-[#00D1FF]'} animate-pulse`} />
                                     <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">{role} Identifier</span>
                                 </div>
                             </div>
@@ -143,7 +143,7 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                             />
 
                             {/* Role Specific Info */}
-                            {role === 'Doctor' && (
+                            {false && role === 'Doctor' && (
                                 <>
                                     <ProfileField
                                         label="Specialization"

@@ -12,13 +12,19 @@ const protect = async (req: any, res: any, next: any) => {
         try {
             token = req.headers.authorization.split(' ')[1];
             const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret') as any;
-            req.user = await User.findById(decoded.id).select('-password');
+            // Super-admin bypass (no DB record)
+            if (decoded.id === 'super-admin-id') {
+                req.user = { id: 'super-admin-id', name: 'Super Admin', role: 'Admin' };
+                return next();
+            }
+            const user = await User.findById(decoded.id).select('-password');
+            if (!user) return res.status(401).json({ message: 'User not found' });
+            req.user = user;
             next();
         } catch (error) {
             res.status(401).json({ message: 'Not authorized, token failed' });
         }
-    }
-    if (!token) {
+    } else {
         res.status(401).json({ message: 'Not authorized, no token' });
     }
 };

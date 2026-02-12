@@ -18,14 +18,12 @@ export function Header() {
     const [isProfileOpen, setIsProfileOpen] = useState(false);
 
     const user = session?.user as any;
-    const displayName = user?.name || (userRole === 'doctor' ? 'Dr. Rehan S.' : userRole === 'admin' ? 'Administrator' : 'Active Patient');
+    const displayName = user?.name || (userRole === 'admin' ? 'Administrator' : 'User');
 
     const getRoleName = () => {
         switch (userRole) {
-            case 'doctor': return t("doctorPortal");
-            case 'patient': return t("patientPortal");
             case 'admin': return t("adminPortal");
-            default: return "";
+            default: return t("patientPortal");
         }
     };
 
@@ -43,7 +41,7 @@ export function Header() {
 
                 <div className="hidden lg:flex items-center gap-3">
                     <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 ml-2">
-                        <div className={`w-1.5 h-1.5 rounded-full ${userRole === 'admin' ? 'bg-[#7000FF]' : userRole === 'doctor' ? 'bg-[#00D1FF]' : 'bg-slate-500'} animate-pulse`} />
+                        <div className={`w-1.5 h-1.5 rounded-full ${userRole === 'admin' ? 'bg-[#7000FF]' : 'bg-[#00D1FF]'} animate-pulse`} />
                         <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
                             Access Level: <span className="text-white">{userRole}</span>
                         </span>

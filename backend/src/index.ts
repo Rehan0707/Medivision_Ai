@@ -7,11 +7,15 @@ dotenv.config();
 
 const PORT = process.env.PORT || 5001;
 
-// Connect to Database and RabbitMQ
+// Connect to Database (required) and RabbitMQ (optional)
 const startServer = async () => {
     try {
         await connectDB();
-        await connectRabbitMQ();
+        try {
+            await connectRabbitMQ();
+        } catch (rmqErr) {
+            console.warn('⚠️ RabbitMQ unavailable (ECG async features disabled). Using mock mode.');
+        }
 
         app.listen(PORT, () => {
             console.log(`🚀 MediVision AI Backend running in ${process.env.NODE_ENV || 'development'} mode on http://localhost:${PORT}`);

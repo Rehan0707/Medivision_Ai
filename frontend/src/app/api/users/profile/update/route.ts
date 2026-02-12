@@ -13,7 +13,8 @@ export async function POST(req: Request) {
         const body = await req.json();
         const accessToken = (session as any).accessToken;
 
-        const res = await fetch('http://localhost:5001/api/users/profile', {
+        const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
+        const res = await fetch(`${apiBase}/api/users/profile`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',

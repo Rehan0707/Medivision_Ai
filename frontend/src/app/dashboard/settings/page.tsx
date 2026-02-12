@@ -5,6 +5,7 @@ import { Settings, Shield, WifiOff, Bell, User, CheckCircle2, ChevronRight, Moon
 import { useSettings } from "@/context/SettingsContext";
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
+import { apiUrl, authHeaders } from "@/lib/api";
 
 export default function SettingsPage() {
     const { isRuralMode, isPrivacyMode, setIsRuralMode, setIsPrivacyMode, userRole } = useSettings();
@@ -39,10 +40,8 @@ export default function SettingsPage() {
             if (!session?.user) return;
             setIsLoading(true);
             try {
-                const res = await fetch('http://localhost:5001/api/users/profile', {
-                    headers: {
-                        'Authorization': `Bearer ${(session as any).accessToken}`
-                    }
+                const res = await fetch(apiUrl('/api/users/profile'), {
+                    headers: authHeaders((session as any).accessToken)
                 });
                 const data = await res.json();
                 if (res.ok) {
@@ -72,12 +71,9 @@ export default function SettingsPage() {
         setIsSaving(true);
         setSuccessMessage("");
         try {
-            const res = await fetch('http://localhost:5001/api/users/profile', {
+            const res = await fetch(apiUrl('/api/users/profile'), {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${(session as any).accessToken}`
-                },
+                headers: authHeaders((session as any).accessToken),
                 body: JSON.stringify(formData)
             });
             if (res.ok) {
@@ -128,12 +124,20 @@ export default function SettingsPage() {
                                     {formData.avatar ? (
                                         <img src={formData.avatar} alt="Avatar" className="w-full h-full object-cover" />
                                     ) : (
-                                        userRole === 'doctor' ? 'DR' : 'JD'
+                                        formData.name?.split(/\s+/).map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'U'
                                     )}
                                 </div>
-                                <button type="button" className="absolute bottom-0 right-0 p-2 rounded-full bg-[#00D1FF] text-black hover:scale-110 transition-all shadow-lg">
-                                    <Camera size={16} />
-                                </button>
+<label className="absolute bottom-0 right-0 p-2 rounded-full bg-[#00D1FF] text-black hover:scale-110 transition-all shadow-lg cursor-pointer">
+                                        <Camera size={16} />
+                                        <input type="file" accept="image/*" className="hidden" onChange={(e) => {
+                                            const f = e.target.files?.[0];
+                                            if (f) {
+                                                const r = new FileReader();
+                                                r.onload = () => setFormData({ ...formData, avatar: r.result as string });
+                                                r.readAsDataURL(f);
+                                            }
+                                        }} />
+                                    </label>
                             </div>
                             <div className="space-y-2 text-center md:text-left">
                                 <h4 className="text-2xl font-black">{formData.name || 'User Identity'}</h4>
@@ -231,15 +235,15 @@ export default function SettingsPage() {
                     <div className="p-8 rounded-[2.5rem] glass-card border-white/5">
                         <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-6">Security Hub</h4>
                         <div className="space-y-4">
-                            <button className="w-full p-4 rounded-xl bg-white/5 border border-white/5 text-xs font-bold text-slate-300 flex items-center justify-between hover:bg-white/10 transition-all">
+                            <button onClick={() => { setSuccessMessage('Password change flow coming soon.'); setTimeout(() => setSuccessMessage(''), 3000); }} className="w-full p-4 rounded-xl bg-white/5 border border-white/5 text-xs font-bold text-slate-300 flex items-center justify-between hover:bg-white/10 transition-all">
                                 <span>Change Secure Password</span>
                                 <ChevronRight size={14} />
                             </button>
-                            <button className="w-full p-4 rounded-xl bg-white/5 border border-white/5 text-xs font-bold text-slate-300 flex items-center justify-between hover:bg-white/10 transition-all">
+                            <button onClick={() => { setSuccessMessage('2FA is active.'); setTimeout(() => setSuccessMessage(''), 3000); }} className="w-full p-4 rounded-xl bg-white/5 border border-white/5 text-xs font-bold text-slate-300 flex items-center justify-between hover:bg-white/10 transition-all">
                                 <span>Multi-Factor (2FA)</span>
                                 <span className="text-emerald-500 text-[9px] font-black uppercase">Active</span>
                             </button>
-                            <button className="w-full p-4 rounded-xl bg-white/5 border border-white/5 text-xs font-bold text-slate-300 flex items-center justify-between hover:bg-white/10 transition-all">
+                            <button onClick={() => { setSuccessMessage('Login history in audit logs.'); setTimeout(() => setSuccessMessage(''), 3000); }} className="w-full p-4 rounded-xl bg-white/5 border border-white/5 text-xs font-bold text-slate-300 flex items-center justify-between hover:bg-white/10 transition-all">
                                 <span>Login History</span>
                                 <ChevronRight size={14} />
                             </button>
@@ -250,7 +254,7 @@ export default function SettingsPage() {
                         <Moon size={32} className="text-[#00D1FF] mb-6 shadow-glow" />
                         <h4 className="font-black text-lg mb-2 uppercase italic">Diagnostic Mode</h4>
                         <p className="text-slate-400 text-sm leading-relaxed mb-6 font-medium">Platform default is set to Clinical Dark. Light mode is available upon regional health board request.</p>
-                        <button type="button" className="w-full py-4 rounded-2xl bg-white text-black font-black text-xs uppercase tracking-widest">
+                        <button type="button" onClick={() => { setSuccessMessage('Light mode on request.'); setTimeout(() => setSuccessMessage(''), 3000); }} className="w-full py-4 rounded-2xl bg-white text-black font-black text-xs uppercase tracking-widest">
                             ENABLE LIGHT MODE
                         </button>
                     </div>

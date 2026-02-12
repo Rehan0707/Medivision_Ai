@@ -8,6 +8,9 @@ import authRoutes from './routes/authRoutes';
 import userRoutes from './routes/userRoutes';
 
 import reportRoutes from './routes/reportRoutes';
+import communityRoutes from './routes/communityRoutes';
+import adminRoutes from './routes/adminRoutes';
+import healthNewsRoutes from './routes/healthNewsRoutes';
 
 const app = express();
 
@@ -23,6 +26,9 @@ app.use('/api/ai', aiRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/reports', reportRoutes);
+app.use('/api/community', communityRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/health-news', healthNewsRoutes);
 
 // Health Check
 app.get('/api/health', (req, res) => {

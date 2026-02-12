@@ -32,10 +32,6 @@ export default withAuth(
         if (path.startsWith("/dashboard/admin") && role !== "admin") {
             return NextResponse.redirect(new URL("/dashboard", req.url));
         }
-
-        if (path.startsWith("/dashboard/doctor") && role !== "doctor") {
-            return NextResponse.redirect(new URL("/dashboard", req.url));
-        }
     },
     {
         callbacks: {

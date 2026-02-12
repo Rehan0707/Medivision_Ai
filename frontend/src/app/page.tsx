@@ -3,7 +3,7 @@
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Brain, Activity, Bone, FlaskConical, ChevronRight, ShieldCheck, Microscope, Zap, ArrowRight, CheckCircle2, Globe2, Play } from "lucide-react";
 import dynamic from "next/dynamic";
-const DoctorBot = dynamic(() => import("@/components/animations/DoctorBot"), { ssr: false });
+const HomeRobot = dynamic(() => import("@/components/home/HomeRobot"), { ssr: false });
 import Link from "next/link";
 import { useRef } from "react";
 
@@ -117,15 +117,15 @@ export default function Home() {
             </motion.div>
           </motion.div>
 
-          {/* Hero Animation with Model */}
-          <div className="relative hidden lg:block perspective-2000">
+          {/* Hero Animation with Interactive AI Robot + Location Health News */}
+          <div className="relative block perspective-2000 lg:block">
             <motion.div
               initial={{ opacity: 0, scale: 0.9, rotateY: -10 }}
               animate={{ opacity: 1, scale: 1, rotateY: 0 }}
               transition={{ duration: 1.5, ease: "easeOut" }}
               className="relative z-10"
             >
-              <DoctorBot />
+              <HomeRobot />
             </motion.div>
           </div>
         </div>

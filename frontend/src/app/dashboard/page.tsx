@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, Suspense } from "react";
+import { useSession } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Upload, FileText, ChevronRight, ChevronLeft, Activity, Bone, AlertCircle, CheckCircle2, Search, Zap, ShieldCheck, Microscope, Scan, Info, Brain, WifiOff, Sparkles, SplitSquareVertical, Database, Users, HeartPulse, Stethoscope, Droplets, Syringe, Pill, ClipboardList, Thermometer, Dna, Waves, AlertTriangle, X } from "lucide-react";
 import dynamic from "next/dynamic";
@@ -15,12 +16,13 @@ const BoneScene = dynamic(() => import("@/components/animations/BoneScene"), { s
 
 import MedicalGlossary from "@/components/dashboard/MedicalGlossary";
 import { useSettings } from "@/context/SettingsContext";
+import { apiUrl, authHeaders } from "@/lib/api";
 import Link from "next/link";
 import { ComparisonModal } from "@/components/dashboard/ComparisonModal";
 import { PrintReport } from "@/components/dashboard/PrintReport";
 import { AdminStats } from "@/components/dashboard/AdminStats";
 import { PatientDashboard } from "@/components/dashboard/PatientDashboard";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { runLocalInference, MLResult } from "@/lib/ml/engine";
 
 function LiveNeuralFeed() {
@@ -59,7 +61,9 @@ export default function Dashboard() {
 
 function DashboardContent() {
     const { isRuralMode, isPrivacyMode, userRole, t } = useSettings();
+    const { data: session } = useSession();
     const searchParams = useSearchParams();
+    const router = useRouter();
 
     // States
     const [selectedModality, setSelectedModality] = useState<string | null>(null);
@@ -87,11 +91,31 @@ function DashboardContent() {
     const [isScheduling, setIsScheduling] = useState(false);
     const [isExporting, setIsExporting] = useState(false);
     const [profile, setProfile] = useState<any>(null);
+    const [latestScan, setLatestScan] = useState<any>(null);
+
+    useEffect(() => {
+        const fetchLatest = async () => {
+            if (!session) return;
+            try {
+                const res = await fetch(apiUrl('/api/scans'), {
+                    headers: authHeaders((session as any).accessToken)
+                });
+                const data = await res.json();
+                if (data && data.length > 0) setLatestScan(data[0]);
+            } catch (err) {
+                console.error("Latest scan fetch failed:", err);
+            }
+        };
+        fetchLatest();
+    }, [session]);
 
     useEffect(() => {
         const fetchProfile = async () => {
+            if (!session) return;
             try {
-                const res = await fetch('/api/users/profile');
+                const res = await fetch(apiUrl('/api/users/profile'), {
+                    headers: authHeaders((session as any).accessToken)
+                });
                 if (res.ok) {
                     const data = await res.json();
                     setProfile(data);
@@ -101,7 +125,7 @@ function DashboardContent() {
             }
         };
         fetchProfile();
-    }, []);
+    }, [session]);
 
     useEffect(() => {
         const modality = searchParams.get("modality");
@@ -122,19 +146,19 @@ function DashboardContent() {
         {
             category: "Imaging & Radiology",
             items: [
-                { id: "xray", name: "X-RAY 3D", icon: <Bone size={24} />, description: "Check for bone issues.", color: "text-[#00D1FF]", bg: "bg-[#00D1FF]/5", border: "border-[#00D1FF]/20" },
-                { id: "mri", name: "MRI 3D", icon: <Brain size={24} />, description: "Brain and tissue check.", color: "text-[#7000FF]", bg: "bg-[#7000FF]/5", border: "border-[#7000FF]/20" },
-                { id: "ct", name: "CT SCAN 3D", icon: <Scan size={24} />, description: "Detailed internal scan.", color: "text-emerald-400", bg: "bg-emerald-400/5", border: "border-emerald-400/20" },
-                { id: "ultrasound", name: "Sonography (Ultrasound)", icon: <Waves size={24} />, description: "High-frequency wave imaging.", color: "text-blue-400", bg: "bg-blue-400/5", border: "border-blue-400/20" },
-                { id: "pet", name: "PET Scan", icon: <Activity size={24} />, description: "Check body functions.", color: "text-rose-400", bg: "bg-rose-400/5", border: "border-rose-400/20" },
-                { id: "mammography", name: "Mammography", icon: <Microscope size={24} />, description: "Breast tissue density check.", color: "text-pink-400", bg: "bg-pink-400/5", border: "border-pink-400/20" }
+                { id: "xray", name: t("xray"), icon: <Bone size={24} />, description: t("xrayDesc"), color: "text-[#00D1FF]", bg: "bg-[#00D1FF]/5", border: "border-[#00D1FF]/20" },
+                { id: "mri", name: t("mri"), icon: <Brain size={24} />, description: t("mriDesc"), color: "text-[#7000FF]", bg: "bg-[#7000FF]/5", border: "border-[#7000FF]/20" },
+                { id: "ct", name: t("ct"), icon: <Scan size={24} />, description: t("ctDesc"), color: "text-emerald-400", bg: "bg-emerald-400/5", border: "border-emerald-400/20" },
+                { id: "ultrasound", name: t("ultrasound"), icon: <Waves size={24} />, description: t("ultrasoundDesc"), color: "text-blue-400", bg: "bg-blue-400/5", border: "border-blue-400/20" },
+                { id: "pet", name: t("pet"), icon: <Activity size={24} />, description: t("petDesc"), color: "text-rose-400", bg: "bg-rose-400/5", border: "border-rose-400/20" },
+                { id: "mammography", name: t("mammography"), icon: <Microscope size={24} />, description: t("mammographyDesc"), color: "text-pink-400", bg: "bg-pink-400/5", border: "border-pink-400/20" }
             ]
         },
         {
             category: "Laboratory & Bloodwork",
             items: [
-                { id: "blood", name: "Blood Tests (CBC)", icon: <Droplets size={24} />, description: "Check blood levels.", color: "text-red-400", bg: "bg-red-400/5", border: "border-red-400/20" },
-                { id: "urine", name: "Urine Analysis", icon: <Syringe size={24} />, description: "Kidney and health check.", color: "text-yellow-400", bg: "bg-yellow-400/5", border: "border-yellow-400/20" },
+                { id: "blood", name: t("blood"), icon: <Droplets size={24} />, description: t("bloodDesc"), color: "text-red-400", bg: "bg-red-400/5", border: "border-red-400/20" },
+                { id: "urine", name: t("urine"), icon: <Syringe size={24} />, description: t("urineDesc"), color: "text-yellow-400", bg: "bg-yellow-400/5", border: "border-yellow-400/20" },
                 { id: "lft", name: "Liver Function (LFT)", icon: <Activity size={24} />, description: "Check liver health.", color: "text-orange-400", bg: "bg-orange-400/5", border: "border-orange-400/20" },
                 { id: "kft", name: "Kidney Function (KFT)", icon: <Zap size={24} />, description: "Check kidney health.", color: "text-indigo-400", bg: "bg-indigo-400/5", border: "border-indigo-400/20" },
                 { id: "thyroid", name: "Thyroid Profile", icon: <Stethoscope size={24} />, description: "Check hormone levels.", color: "text-cyan-400", bg: "bg-cyan-400/5", border: "border-cyan-400/20" },
@@ -204,9 +228,9 @@ function DashboardContent() {
             // Run custom ML alongside Gemini
             const customMlPromise = runLocalInference(imageToAnalyze, selectedModality || "xray");
 
-            const res = await fetch('/api/ai/analyze', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+const res = await fetch(apiUrl('/api/ai/analyze'), {
+                    method: 'POST',
+                    headers: authHeaders((session as any).accessToken),
                 body: JSON.stringify({
                     image: imageToAnalyze,
                     modality: selectedModality || "xray"
@@ -288,9 +312,9 @@ function DashboardContent() {
 
     const saveScanToDb = async (analysisData: any, image: string) => {
         try {
-            await fetch('/api/scans/save', {
+            await fetch(apiUrl('/api/scans/save'), {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: authHeaders((session as any).accessToken),
                 body: JSON.stringify({
                     referenceId: `MV-${Math.floor(Math.random() * 9000) + 1000}`,
                     type: analysisData.detectedPart ? `${analysisData.detectedPart.toUpperCase()} Scan` : "Medical Scan",
@@ -433,33 +457,29 @@ function DashboardContent() {
                                     animate={{ opacity: 1, y: 0 }}
                                     className="text-center mt-12 relative"
                                 >
-                                    {userRole === "patient" && (
-                                        <div className="absolute top-0 left-0">
-                                            <button
-                                                onClick={() => {
-                                                    setSelectedModality(null);
-                                                    const url = new URL(window.location.href);
-                                                    url.searchParams.delete("modality");
-                                                    window.history.pushState({}, '', url);
-                                                }}
-                                                className="px-6 py-3 rounded-2xl bg-white/5 border border-white/10 text-slate-400 text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all flex items-center gap-3"
-                                            >
-                                                <ChevronLeft size={16} />
-                                                Return to Portal
-                                            </button>
-                                        </div>
-                                    )}
+                                    <div className="absolute top-0 left-0">
+                                        <button
+                                            onClick={() => {
+                                                setSelectedModality(null);
+                                                const url = new URL(window.location.href);
+                                                url.searchParams.delete("modality");
+                                                window.history.pushState({}, '', url);
+                                            }}
+                                            className="px-6 py-3 rounded-2xl bg-white/5 border border-white/10 text-slate-400 text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all flex items-center gap-3"
+                                        >
+                                            <ChevronLeft size={16} />
+                                            Back
+                                        </button>
+                                    </div>
                                     <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card text-[10px] font-black text-[#00D1FF] mb-6 border-[#00D1FF]/20 uppercase tracking-[0.2em]">
                                         <Activity size={14} className="animate-pulse" />
-                                        {userRole === "doctor" ? "Neural Operating Theatre" : "Patient Diagnostic Portal"}
+                                        MediVision AI
                                     </div>
                                     <h2 className="text-5xl font-black mb-4 tracking-tighter uppercase italic">
-                                        {userRole === "doctor" ? "Clinical Intelligence" : "Welcome to MediVision"}
+                                        Welcome to MediVision
                                     </h2>
                                     <p className="text-slate-400 text-lg max-w-2xl mx-auto font-medium leading-relaxed">
-                                        {userRole === "doctor"
-                                            ? "Access high-fidelity 3D reconstructions and neural mapping for surgical planning and diagnostics."
-                                            : "Get started by selecting the type of scan you want to analyze. Our AI will guide you through the process step-by-step."}
+                                        Get started by selecting the type of scan you want to analyze. Our AI will guide you through the process step-by-step.
                                     </p>
 
                                     {/* Step Indicator */}
@@ -474,15 +494,7 @@ function DashboardContent() {
 
                                 {!selectedModality ? (
                                     <div className="space-y-16 px-4">
-                                        {groupedModalities
-                                            .filter(group => {
-                                                if (userRole === "doctor") {
-                                                    // Doctors see 3D imaging and clinical notes first
-                                                    return group.category === "Imaging & Radiology" || group.category === "Clinical Documents & Surgery";
-                                                }
-                                                return true; // Patients see everything
-                                            })
-                                            .map((group, gIdx) => (
+                                        {groupedModalities.map((group, gIdx) => (
                                                 <div key={group.category} className="space-y-8">
                                                     <div className="flex items-center gap-4">
                                                         <div className="h-[1px] flex-1 bg-white/5" />
@@ -498,7 +510,15 @@ function DashboardContent() {
                                                                 initial={{ opacity: 0, y: 10 }}
                                                                 animate={{ opacity: 1, y: 0 }}
                                                                 transition={{ delay: (gIdx * 0.1) + (idx * 0.05) }}
-                                                                onClick={() => setSelectedModality(m.id)}
+                                                                onClick={() => {
+                                                                    if (['xray', 'mri', 'ct', 'mammography'].includes(m.id)) {
+                                                                        router.push(`/dashboard/visualizer?modality=${m.id}`);
+                                                                    } else if (m.id === 'ecg') {
+                                                                        router.push(`/dashboard/signals`);
+                                                                    } else {
+                                                                        setSelectedModality(m.id);
+                                                                    }
+                                                                }}
                                                                 className={`p-8 rounded-[2.5rem] ${m.bg} border-2 ${m.border} hover:border-white/20 cursor-pointer transition-all group relative overflow-hidden flex flex-col justify-between h-full`}
                                                             >
                                                                 <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 blur-[60px] rounded-full translate-x-10 -translate-y-10" />
@@ -510,7 +530,7 @@ function DashboardContent() {
                                                                     <p className="text-[11px] text-slate-400 leading-relaxed font-medium mb-6">{m.description}</p>
                                                                 </div>
                                                                 <div className={`flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.2em] ${m.color} mt-auto`}>
-                                                                    {userRole === "doctor" ? "Start Specialist Review" : "Start Scan Analysis"} <ChevronRight size={12} />
+                                                                    Start Analysis <ChevronRight size={12} />
                                                                 </div>
                                                             </motion.div>
                                                         ))}
@@ -518,36 +538,10 @@ function DashboardContent() {
                                                 </div>
                                             ))}
 
-                                        {/* Dynamic Patient/Doctor Data */}
-                                        {userRole === "patient" && (
-                                            <div className="mt-12">
-                                                <PatientDashboard t={t} profile={profile} />
-                                            </div>
-                                        )}
-
-                                        {userRole === "doctor" && (
-                                            <motion.div
-                                                initial={{ opacity: 0, y: 30 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                transition={{ delay: 0.5 }}
-                                                className="mt-20 p-12 glass-morphism rounded-[3rem] border-[#00D1FF]/20 bg-[#00D1FF]/[0.02]"
-                                            >
-                                                <div className="flex justify-between items-center mb-10">
-                                                    <h3 className="text-3xl font-black italic uppercase tracking-tighter flex items-center gap-4">
-                                                        <Activity className="text-[#00D1FF]" size={28} />
-                                                        Clinical Operations
-                                                    </h3>
-                                                    <div className="flex gap-4">
-                                                        <div className="px-5 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[9px] font-black uppercase tracking-widest uppercase">Telemetry Active</div>
-                                                    </div>
-                                                </div>
-                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center text-slate-500 italic text-sm">
-                                                    <div className="md:col-span-3 p-10 border border-dashed border-white/10 rounded-3xl">
-                                                        Real-time clinical throughput statistics will populate here as scans are processed.
-                                                    </div>
-                                                </div>
-                                            </motion.div>
-                                        )}
+                                        {/* User Dashboard */}
+                                        <div className="mt-12">
+                                            <PatientDashboard t={t} profile={profile} latestScan={latestScan} />
+                                        </div>
                                     </div>
                                 ) : (
                                     <motion.div
@@ -1035,7 +1029,7 @@ function DashboardContent() {
 
                                         <div className="flex gap-4">
                                             <button onClick={() => setIsScheduling(false)} className="flex-1 py-5 rounded-2xl border border-white/10 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-white/5 transition-all">Close Pipeline</button>
-                                            <button className="flex-1 py-5 rounded-2xl bg-[#7000FF] text-white text-[10px] font-black uppercase tracking-[0.2em] hover:scale-105 transition-all">Select Consultant</button>
+                                            <button onClick={() => { setIsScheduling(false); /* Consultant booking confirmed - in production would open booking flow */ }} className="flex-1 py-5 rounded-2xl bg-[#7000FF] text-white text-[10px] font-black uppercase tracking-[0.2em] hover:scale-105 transition-all">Select Consultant</button>
                                         </div>
                                     </motion.div>
                                 </motion.div>

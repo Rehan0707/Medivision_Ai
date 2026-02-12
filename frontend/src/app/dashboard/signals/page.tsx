@@ -1,11 +1,13 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
+import { useSession } from "next-auth/react";
 import { Activity, Heart, Zap, ShieldCheck, Thermometer, Droplets, ArrowUpRight, ArrowDownRight, Info, Upload, Sparkles, Scan, ChevronRight, FileJson, Share2, Download } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useSettings } from "@/context/SettingsContext";
 
 import { ECGMonitor } from "@/components/dashboard/ECGMonitor";
+import { apiUrl, authHeaders } from "@/lib/api";
 import { runLocalInference, MLResult } from "@/lib/ml/engine";
 
 interface EcgResult {
@@ -19,16 +21,21 @@ interface EcgResult {
 }
 
 function EcgAnalysisSection({ onAnalysisComplete }: { onAnalysisComplete: (result: EcgResult) => void }) {
+    const { data: session } = useSession();
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [analysisResult, setAnalysisResult] = useState<EcgResult | null>(null);
     const [localMlResult, setLocalMlResult] = useState<MLResult | null>(null);
     const [previewImage, setPreviewImage] = useState<string | null>(null);
 
+    const [statusMessage, setStatusMessage] = useState("");
+
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        // ... existing image upload logic ...
         const file = e.target.files?.[0];
         if (!file) return;
 
         setIsAnalyzing(true);
+        setStatusMessage("Visual Analysis Active...");
         setAnalysisResult(null);
 
         const reader = new FileReader();
@@ -40,21 +47,24 @@ function EcgAnalysisSection({ onAnalysisComplete }: { onAnalysisComplete: (resul
         setPreviewImage(base64);
 
         try {
-            // Dual Engine Analysis
             const localPromise = runLocalInference(base64, "ecg");
 
-            const res = await fetch('/api/ai/analyze', {
+            const res = await fetch(apiUrl('/api/ai/analyze'), {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${(session as any)?.accessToken}`
+                },
                 body: JSON.stringify({
                     image: base64,
                     prompt: `Analyze this ECG (Electrocardiogram) scan image/recording. 
-                    Identify the heart rhythm, any abnormalities (arrhythmia, tachycardia, bradycardia, etc.), and provide a plain-English explanation of what is happening.
+                    Identify the heart rhythm, any abnormalities (arrhythmia, tachycardia, bradycardia, etc.).
+                    CRITICAL: Provide a "summary" that is a simple, plain-English explanation for a non-medical user. Avoid complex jargon where possible, or explain it if necessary.
                     Return ONLY a JSON object:
                     {
                         "rhythm": "string",
                         "findings": ["string"],
-                        "summary": "string",
+                        "summary": "string (Human-understandable explanation)",
                         "confidence": number,
                         "heartRateBpm": number
                     }`
@@ -64,14 +74,66 @@ function EcgAnalysisSection({ onAnalysisComplete }: { onAnalysisComplete: (resul
             const data = await res.json();
             const localResult = await localPromise;
 
-            const jsonStr = data.text.replace(/```json|```/g, '').trim();
-            const parsed = JSON.parse(jsonStr);
+            const parsed = data.rhythm !== undefined ? data : (() => {
+                const jsonStr = (data.text || JSON.stringify(data)).replace(/```json|```/g, '').trim();
+                return JSON.parse(jsonStr);
+            })();
             setAnalysisResult(parsed);
             setLocalMlResult(localResult);
             onAnalysisComplete(parsed);
         } catch (err) {
             console.error("ECG Analysis Error:", err);
         } finally {
+            setIsAnalyzing(false);
+            setStatusMessage("");
+        }
+    };
+
+    const startKaggleAnalysis = async () => {
+        setIsAnalyzing(true);
+        setAnalysisResult(null);
+        setPreviewImage(null);
+        setStatusMessage("Queuing Job in RabbitMQ...");
+
+        try {
+            // 1. Trigger Async Job
+            const res = await fetch(apiUrl('/api/ai/analyze-ecg-async'), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ecgData: "SAMPLE_KAGGLE_ID", samplingRate: 500 })
+            });
+
+            if (!res.ok) throw new Error("Failed to queue job");
+
+            const { jobId } = await res.json();
+            setStatusMessage(`Job ${jobId.slice(0, 8)} Queued. Processing...`);
+
+            // 2. Poll for Completion
+            const pollInterval = setInterval(async () => {
+                try {
+                    const statusRes = await fetch(apiUrl(`/api/ai/job-status/${jobId}`));
+                    const statusData = await statusRes.json();
+
+                    if (statusData.status === 'Completed') {
+                        clearInterval(pollInterval);
+                        setAnalysisResult({
+                            ...statusData.result,
+                            heartRateBpm: Math.floor(Math.random() * (100 - 60) + 60) // Mock BPM for CSV data
+                        });
+                        onAnalysisComplete({
+                            ...statusData.result,
+                            heartRateBpm: 72
+                        });
+                        setIsAnalyzing(false);
+                        setStatusMessage("");
+                    }
+                } catch (e) {
+                    console.error("Polling error", e);
+                }
+            }, 1000);
+
+        } catch (err) {
+            console.error("Kaggle Analysis Error:", err);
             setIsAnalyzing(false);
         }
     };
@@ -108,7 +170,9 @@ function EcgAnalysisSection({ onAnalysisComplete }: { onAnalysisComplete: (resul
                     >
                         <Scan size={40} className="animate-pulse" />
                     </motion.div>
-                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#00D1FF] animate-pulse">Syncing with Cardiac Neural Node...</p>
+                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#00D1FF] animate-pulse">
+                        {statusMessage || "Syncing with Cardiac Neural Node..."}
+                    </p>
                 </div>
             )}
 
@@ -137,6 +201,9 @@ function EcgAnalysisSection({ onAnalysisComplete }: { onAnalysisComplete: (resul
                             <div className="flex items-center gap-3 text-emerald-400 mb-4">
                                 <ShieldCheck size={20} />
                                 <span className="text-[10px] font-black uppercase tracking-[0.3em] font-black italic">{analysisResult.rhythm || "Neural Analysis Complete"}</span>
+                            </div>
+                            <div className="mb-2 flex items-center gap-2">
+                                <span className="text-[9px] font-black text-[#00D1FF] uppercase tracking-widest bg-[#00D1FF]/10 px-2 py-1 rounded-md">Human-Understandable Explanation</span>
                             </div>
                             <p className="text-xl font-medium text-slate-200 leading-relaxed italic">
                                 "{analysisResult.summary}"

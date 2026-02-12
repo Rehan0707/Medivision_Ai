@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { signIn, useSession } from "next-auth/react";
-import { Brain, ShieldCheck, Mail, Lock, User, UserPlus, LogIn, ChevronRight, Zap, Globe, Microscope, Activity, Eye, EyeOff, CheckCircle2, AlertCircle, Sparkles, Shield } from "lucide-react";
+import { ShieldCheck, Mail, Lock, UserPlus, ChevronRight, Globe, Activity, Eye, EyeOff, CheckCircle2, AlertCircle, Microscope } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSettings } from "@/context/SettingsContext";
@@ -15,17 +15,10 @@ export default function AuthPage() {
     const [showSuccess, setShowSuccess] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [role, setRole] = useState<"patient" | "doctor" | "admin">("patient");
-
     // Form States
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [fullName, setFullName] = useState("");
-    const [specialization, setSpecialization] = useState("");
-    const [licenseNumber, setLicenseNumber] = useState("");
-    const [clinicName, setClinicName] = useState("");
-    const [workingHours, setWorkingHours] = useState("");
-    const [verificationProof, setVerificationProof] = useState("");
 
     const { setUserRole } = useSettings();
     const router = useRouter();
@@ -42,12 +35,9 @@ export default function AuthPage() {
     }, [status, session, router]);
 
     const validateForm = () => {
-        if (!email.includes("@")) return "Please enter a valid neural address (email).";
-        if (password.length < 6) return "Security key must be at least 6 characters.";
-        if (!isLogin && !fullName) return "Identity name is required for registration.";
-        if (!isLogin && role === 'doctor' && (!specialization || !licenseNumber || !clinicName || !workingHours || !verificationProof)) {
-            return "All clinical details and verification proof are required.";
-        }
+        if (!email.includes("@")) return "Please enter a valid email address.";
+        if (password.length < 6) return "Password must be at least 6 characters.";
+        if (!isLogin && !fullName) return "Name is required for registration.";
         return null;
     };
 
@@ -78,19 +68,14 @@ export default function AuthPage() {
                     // Redirect logic is handled by useEffect based on session status
                 }
             } else {
-                const res = await fetch('http://localhost:5001/api/auth/register', {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001'}/api/auth/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         name: fullName,
                         email,
                         password,
-                        role: role.charAt(0).toUpperCase() + role.slice(1),
-                        specialization,
-                        licenseNumber,
-                        clinicName,
-                        workingHours,
-                        verificationProof
+                        role: 'Patient'
                     })
                 });
 
@@ -100,18 +85,7 @@ export default function AuthPage() {
                     setError(data.message || "Registration failed.");
                 } else {
                     setShowSuccess(true);
-                    setUserRole(role);
-                    setTimeout(() => {
-                        if (role === 'doctor') {
-                            setIsLogin(true);
-                            setShowSuccess(false);
-                            setError("Account created. Please wait for admin approval before logging in.");
-                        } else if (role === 'admin') {
-                            router.push("/dashboard/admin/approval");
-                        } else {
-                            router.push("/dashboard");
-                        }
-                    }, 2000);
+                    setUserRole('patient');
                 }
             }
         } catch (err) {
@@ -309,36 +283,6 @@ export default function AuthPage() {
                                     )}
 
                                     <form onSubmit={handleAuth} className="space-y-5">
-                                        <div className="mb-6">
-                                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-3 text-center">Identity Role</p>
-                                            <div className="bg-white/[0.03] p-1 rounded-2xl border border-white/5 grid grid-cols-3 gap-1">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setRole("patient")}
-                                                    className={`py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${role === 'patient' ? 'bg-[#00D1FF] text-black shadow-lg shadow-[#00D1FF]/20' : 'text-slate-500 hover:text-white'}`}
-                                                >
-                                                    <User size={14} />
-                                                    Patient
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setRole("doctor")}
-                                                    className={`py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${role === 'doctor' ? 'bg-[#7000FF] text-white shadow-lg shadow-[#7000FF]/20' : 'text-slate-500 hover:text-white'}`}
-                                                >
-                                                    <Brain size={14} />
-                                                    Doctor
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setRole("admin")}
-                                                    className={`py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${role === 'admin' ? 'bg-amber-500 text-black shadow-lg shadow-amber-500/20' : 'text-slate-500 hover:text-white'}`}
-                                                >
-                                                    <Shield size={14} />
-                                                    Admin
-                                                </button>
-                                            </div>
-                                        </div>
-
                                         <AnimatePresence mode="popLayout">
                                             {!isLogin && (
                                                 <motion.div
@@ -354,70 +298,11 @@ export default function AuthPage() {
                                                             type="text"
                                                             value={fullName}
                                                             onChange={(e) => setFullName(e.target.value)}
-                                                            placeholder={role === 'doctor' ? "Doctor Full Name" : "Patient Full Name"}
+                                                            placeholder="Full Name"
                                                             required={!isLogin}
                                                             className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-sm focus:outline-none focus:border-[#00D1FF]/50 transition-all font-medium placeholder:text-slate-600"
                                                         />
                                                     </div>
-
-                                                    {role === 'doctor' && (
-                                                        <motion.div
-                                                            initial={{ opacity: 0, height: 0 }}
-                                                            animate={{ opacity: 1, height: 'auto' }}
-                                                            className="space-y-4 pt-2"
-                                                        >
-                                                            <div className="relative group">
-                                                                <Microscope className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-[#00D1FF] transition-colors" size={18} />
-                                                                <input
-                                                                    type="text"
-                                                                    value={specialization}
-                                                                    onChange={(e) => setSpecialization(e.target.value)}
-                                                                    placeholder="Area of Specialization"
-                                                                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-sm focus:outline-none focus:border-[#00D1FF]/50 transition-all font-medium placeholder:text-slate-600"
-                                                                />
-                                                            </div>
-                                                            <div className="relative group">
-                                                                <ShieldCheck className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-[#00D1FF] transition-colors" size={18} />
-                                                                <input
-                                                                    type="text"
-                                                                    value={licenseNumber}
-                                                                    onChange={(e) => setLicenseNumber(e.target.value)}
-                                                                    placeholder="Medical License Number"
-                                                                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-sm focus:outline-none focus:border-[#00D1FF]/50 transition-all font-medium placeholder:text-slate-600"
-                                                                />
-                                                            </div>
-                                                            <div className="relative group">
-                                                                <Globe className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-[#00D1FF] transition-colors" size={18} />
-                                                                <input
-                                                                    type="text"
-                                                                    value={clinicName}
-                                                                    onChange={(e) => setClinicName(e.target.value)}
-                                                                    placeholder="Hospital/Clinic Affiliation"
-                                                                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-sm focus:outline-none focus:border-[#00D1FF]/50 transition-all font-medium placeholder:text-slate-600"
-                                                                />
-                                                            </div>
-                                                            <div className="relative group">
-                                                                <Activity className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-[#00D1FF] transition-colors" size={18} />
-                                                                <input
-                                                                    type="text"
-                                                                    value={workingHours}
-                                                                    onChange={(e) => setWorkingHours(e.target.value)}
-                                                                    placeholder="Working Hours (e.g. 09:00 - 18:00)"
-                                                                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-sm focus:outline-none focus:border-[#00D1FF]/50 transition-all font-medium placeholder:text-slate-600"
-                                                                />
-                                                            </div>
-                                                            <div className="relative group">
-                                                                <ShieldCheck className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-[#00D1FF] transition-colors" size={18} />
-                                                                <input
-                                                                    type="text"
-                                                                    value={verificationProof}
-                                                                    onChange={(e) => setVerificationProof(e.target.value)}
-                                                                    placeholder="Licence Proof / Certificate URL"
-                                                                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-sm focus:outline-none focus:border-[#00D1FF]/50 transition-all font-medium placeholder:text-slate-600"
-                                                                />
-                                                            </div>
-                                                        </motion.div>
-                                                    )}
                                                 </motion.div>
                                             )}
                                         </AnimatePresence>

@@ -4,6 +4,7 @@ import { useRef, useMemo, useState, useEffect } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, PerspectiveCamera, Float, ContactShadows, Environment } from "@react-three/drei";
 import * as THREE from "three";
+import { useSettings } from "@/context/SettingsContext";
 
 export interface HotspotData {
     id: string;
@@ -61,7 +62,7 @@ function InjuryHotspot({ position, label, isActive }: { position: [number, numbe
     );
 }
 
-function StylizedBone({ hotspots = [], activeHotspotId, hasIssue }: { hotspots?: HotspotData[], activeHotspotId?: string | null, hasIssue?: boolean }) {
+function StylizedBone({ hotspots = [], activeHotspotId, hasIssue, isRural = false }: { hotspots?: HotspotData[], activeHotspotId?: string | null, hasIssue?: boolean, isRural?: boolean }) {
     const pulseRef = useRef<THREE.Group>(null);
 
     useFrame((state) => {
@@ -78,8 +79,8 @@ function StylizedBone({ hotspots = [], activeHotspotId, hasIssue }: { hotspots?:
     return (
         <group ref={pulseRef} rotation={[0, 0, Math.PI / 8]}>
             {/* Main Shaft - Using Capsule for organic taper */}
-            <mesh position={[0, 0, 0]} castShadow>
-                <capsuleGeometry args={[0.3, 2.8, 8, 32]} />
+            <mesh position={[0, 0, 0]} castShadow={!isRural}>
+                <capsuleGeometry args={[0.3, 2.8, isRural ? 4 : 8, isRural ? 12 : 32]} />
                 <meshPhysicalMaterial
                     color="#fdfcf0"
                     roughness={0.15}
@@ -130,6 +131,7 @@ function StylizedBone({ hotspots = [], activeHotspotId, hasIssue }: { hotspots?:
 }
 
 export default function BoneScene({ hotspots = [], activeHotspotId = null, hasIssue = false }: { hotspots?: HotspotData[], activeHotspotId?: string | null, hasIssue?: boolean }) {
+    const { isRuralMode } = useSettings();
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
@@ -144,7 +146,7 @@ export default function BoneScene({ hotspots = [], activeHotspotId = null, hasIs
 
     return (
         <div className="w-full h-full bg-[#020617]/50 rounded-[2rem] overflow-hidden">
-            <Canvas shadows gl={{ preserveDrawingBuffer: true, antialias: true }}>
+            <Canvas shadows={!isRuralMode} gl={{ preserveDrawingBuffer: true, antialias: !isRuralMode }}>
                 <PerspectiveCamera makeDefault position={[0, 0, 7]} fov={35} />
                 <OrbitControls
                     enableDamping
@@ -156,12 +158,12 @@ export default function BoneScene({ hotspots = [], activeHotspotId = null, hasIs
                 />
 
                 <ambientLight intensity={0.5} />
-                <spotLight position={[10, 10, 10]} angle={0.2} penumbra={1} intensity={2} castShadow />
-                <pointLight position={[-10, -10, -10]} color="#7000FF" intensity={2} />
-                <pointLight position={[0, 5, 5]} color="#00D1FF" intensity={1} />
+                {!isRuralMode && <spotLight position={[10, 10, 10]} angle={0.2} penumbra={1} intensity={2} castShadow />}
+                <pointLight position={[-10, -10, -10]} color="#7000FF" intensity={isRuralMode ? 1 : 2} />
+                <pointLight position={[0, 5, 5]} color="#00D1FF" intensity={isRuralMode ? 0.5 : 1} />
 
-                <Float speed={2} rotationIntensity={0.5} floatIntensity={0.5}>
-                    <StylizedBone hotspots={hotspots} activeHotspotId={activeHotspotId} hasIssue={hasIssue} />
+                <Float speed={isRuralMode ? 1 : 2} rotationIntensity={isRuralMode ? 0.2 : 0.5} floatIntensity={0.5}>
+                    <StylizedBone hotspots={hotspots} activeHotspotId={activeHotspotId} hasIssue={hasIssue} isRural={isRuralMode} />
                 </Float>
 
                 <ContactShadows

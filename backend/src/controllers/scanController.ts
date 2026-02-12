@@ -39,6 +39,31 @@ export const createScan = async (req: Request, res: Response) => {
     }
 };
 
+// @desc    Save scan (alias for create with custom referenceId)
+// @route   POST /api/scans/save
+// @access  Public
+export const saveScan = async (req: Request, res: Response) => {
+    try {
+        const { referenceId, type, patient, analysis, imageUrl, risk, bodyPart } = req.body;
+
+        const newScan = new Scan({
+            referenceId: referenceId || `SCAN-${uuidv4().substring(0, 8).toUpperCase()}`,
+            type: type || 'Medical Scan',
+            patient: patient || 'Self',
+            analysis: analysis || { confidence: 0, findings: [], recommendations: [] },
+            imageUrl,
+            bodyPart,
+            status: 'Active',
+            risk: risk || 'Safe',
+        });
+
+        const savedScan = await newScan.save();
+        res.status(201).json(savedScan);
+    } catch (error: any) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
 // @desc    Get scan by ID
 // @route   GET /api/scans/:id
 // @access  Public

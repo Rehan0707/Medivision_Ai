@@ -3,17 +3,38 @@
 import { motion } from "framer-motion";
 import { FlaskConical, Filter, Search, Download, FileText, AlertCircle, CheckCircle2, ChevronRight, Microscope } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { apiUrl, authHeaders } from "@/lib/api";
 
 export default function LabReportsPage() {
+    const { data: session } = useSession();
     const [reports, setReports] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [isUploadOpen, setIsUploadOpen] = useState(false);
     const [uploading, setUploading] = useState(false);
     const [newReport, setNewReport] = useState({ type: '', text: '' });
+    const [showFilter, setShowFilter] = useState(false);
+    const [bioAnalysis, setBioAnalysis] = useState<any>({ indicators: [], aiSuggestion: '' });
+
+    async function fetchBioAnalysis() {
+        if (!session) return;
+        try {
+            const res = await fetch(apiUrl('/api/reports/bio-analysis'), {
+                headers: authHeaders((session as any).accessToken)
+            });
+            const data = await res.json();
+            setBioAnalysis(data);
+        } catch (err) {
+            console.error("Failed to fetch bio-analysis:", err);
+        }
+    }
 
     async function fetchReports() {
+        if (!session) return;
         try {
-            const res = await fetch('/api/reports');
+            const res = await fetch(apiUrl('/api/reports'), {
+                headers: authHeaders((session as any).accessToken)
+            });
             const data = await res.json();
             setReports(data.map((r: any) => ({
                 id: `LAB-${r._id.slice(-4).toUpperCase()}`,
@@ -31,17 +52,23 @@ export default function LabReportsPage() {
     }
 
     useEffect(() => {
-        fetchReports();
-    }, []);
+        if (session) {
+            fetchReports();
+            fetchBioAnalysis();
+        }
+    }, [session]);
 
     const handleAddReport = async () => {
         if (!newReport.type || !newReport.text) return;
         setUploading(true);
         try {
             // 1. Create Report
-            const createRes = await fetch('/api/reports', {
+            const createRes = await fetch(apiUrl('/api/reports'), {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${(session as any).accessToken}`
+                },
                 body: JSON.stringify({
                     scanType: newReport.type,
                     bodyPart: 'Systemic',
@@ -53,9 +80,12 @@ export default function LabReportsPage() {
             const reportData = await createRes.json();
 
             // 2. Analyze Report
-            await fetch('/api/reports/analyze', {
+            await fetch(apiUrl('/api/reports/analyze'), {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${(session as any).accessToken}`
+                },
                 body: JSON.stringify({
                     text: newReport.text,
                     reportId: reportData._id
@@ -139,8 +169,8 @@ export default function LabReportsPage() {
                                 className="w-full bg-black/40 border border-white/10 rounded-2xl py-4 pl-14 pr-6 text-sm focus:outline-none focus:border-[#00D1FF]/50 transition-all"
                             />
                         </div>
-                        <button className="px-8 py-4 rounded-2xl bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest flex items-center gap-3">
-                            <Filter size={16} /> Filter
+                        <button onClick={() => setShowFilter(!showFilter)} className="px-8 py-4 rounded-2xl bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest flex items-center gap-3">
+                            <Filter size={16} /> {showFilter ? 'Hide Filter' : 'Filter'}
                         </button>
                     </div>
 
@@ -172,10 +202,21 @@ export default function LabReportsPage() {
                                         <p className={`text-sm font-black ${r.status === 'Critical' ? 'text-red-400' : 'text-emerald-400'}`}>{r.findings}</p>
                                     </div>
                                     <div className="flex gap-3">
-                                        <button className="p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all">
+                                        <button
+                                            onClick={() => {
+                                                const blob = new Blob([JSON.stringify(r)], { type: 'application/json' });
+                                                const url = URL.createObjectURL(blob);
+                                                const a = document.createElement('a');
+                                                a.href = url;
+                                                a.download = `${r.id}.json`;
+                                                a.click();
+                                                URL.revokeObjectURL(url);
+                                            }}
+                                            className="p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all"
+                                        >
                                             <Download size={18} />
                                         </button>
-                                        <button className="p-4 rounded-xl bg-[#00D1FF] text-black">
+                                        <button onClick={() => alert(r.fullAnalysis || r.findings)} className="p-4 rounded-xl bg-[#00D1FF] text-black">
                                             <ChevronRight size={18} />
                                         </button>
                                     </div>
@@ -193,14 +234,13 @@ export default function LabReportsPage() {
                             <h4 className="font-black text-lg uppercase italic">Bio-Analysis</h4>
                         </div>
                         <div className="space-y-6">
-                            <LabIndicator label="WBC Count" status="Optimal" color="bg-emerald-500" />
-                            <LabIndicator label="Glucose (Fasting)" status="Attention" color="bg-orange-500" />
-                            <LabIndicator label="Cholesterol" status="Normal" color="bg-emerald-500" />
-                            <LabIndicator label="Hemoglobin" status="Optimal" color="bg-emerald-500" />
+                            {bioAnalysis.indicators.map((ind: any, i: number) => (
+                                <LabIndicator key={i} label={ind.label} status={ind.status} color={ind.color} />
+                            ))}
                         </div>
                         <div className="mt-10 p-4 rounded-2xl bg-black/40 border border-white/5">
                             <p className="text-[11px] leading-relaxed text-slate-400 font-medium italic">
-                                "AI has detected a declining trend in Vitamin B12 over the last 3 reports. Clinical suggestion: Supplementation consult."
+                                "{bioAnalysis.aiSuggestion}"
                             </p>
                         </div>
                     </div>

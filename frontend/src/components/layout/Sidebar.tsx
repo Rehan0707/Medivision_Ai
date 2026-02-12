@@ -32,29 +32,29 @@ export function Sidebar() {
 
     const allItems = [
         // CORE DIAGNOSTICS
-        { group: "CORE", name: t("dashboard"), icon: LayoutDashboard, href: "/dashboard", roles: ["doctor", "patient", "admin"] },
-        { group: "CORE", name: "X-Ray 3D", icon: Bone, href: "/dashboard?modality=xray", roles: ["doctor", "patient"] },
-        { group: "CORE", name: "MRI 3D", icon: Brain, href: "/dashboard?modality=mri", roles: ["doctor", "patient"] },
-        { group: "CORE", name: "CT Scan 3D", icon: Scan, href: "/dashboard?modality=ct", roles: ["doctor", "patient"] },
+        { group: "CORE", name: t("dashboard"), icon: LayoutDashboard, href: "/dashboard", roles: ["patient", "doctor", "admin"] },
+        { group: "CORE", name: "X-Ray 3D", icon: Bone, href: "/dashboard?modality=xray", roles: ["patient", "doctor", "admin"] },
+        { group: "CORE", name: "MRI 3D", icon: Brain, href: "/dashboard?modality=mri", roles: ["patient", "doctor", "admin"] },
+        { group: "CORE", name: "CT Scan 3D", icon: Scan, href: "/dashboard?modality=ct", roles: ["patient", "doctor", "admin"] },
 
         // LABORATORY
-        { group: "LAB", name: "Blood Tests", icon: Activity, href: "/dashboard?modality=blood", roles: ["doctor", "patient"] },
-        { group: "LAB", name: "Urine Analysis", icon: Activity, href: "/dashboard?modality=urine", roles: ["doctor", "patient"] },
+        { group: "LAB", name: "Blood Tests", icon: Activity, href: "/dashboard?modality=blood", roles: ["patient", "doctor", "admin"] },
+        { group: "LAB", name: "Urine Analysis", icon: Activity, href: "/dashboard?modality=urine", roles: ["patient", "doctor", "admin"] },
 
         // CARDIOVASCULAR
-        { group: "CARDIO", name: "ECG / EKG", icon: Activity, href: "/dashboard/signals", roles: ["doctor", "patient"] },
-        { group: "CARDIO", name: "Stress Test", icon: Activity, href: "/dashboard?modality=stress", roles: ["doctor", "patient"] },
+        { group: "CARDIO", name: "ECG / EKG", icon: Activity, href: "/dashboard/signals", roles: ["patient", "doctor", "admin"] },
+        { group: "CARDIO", name: "Stress Test", icon: Activity, href: "/dashboard?modality=stress", roles: ["patient", "doctor", "admin"] },
 
         // INTELLIGENCE & RECOVERY
-        { group: "INTEL", name: t("signals"), icon: Activity, href: "/dashboard/signals", roles: ["doctor", "patient"] },
-        { group: "INTEL", name: t("trends"), icon: TrendingUp, href: "/dashboard/trends", roles: ["doctor", "patient"] },
-        { group: "INTEL", name: "Risk Sentinel", icon: ShieldAlert, href: "/dashboard/risk", roles: ["doctor", "patient"] },
-        { group: "INTEL", name: t("copilot"), icon: Stethoscope, href: "/dashboard/copilot", roles: ["doctor"] },
-        { group: "INTEL", name: t("rehab"), icon: Zap, href: "/dashboard/rehab", roles: ["doctor", "patient"] },
+        { group: "INTEL", name: t("signals"), icon: Activity, href: "/dashboard/signals", roles: ["patient", "doctor", "admin"] },
+        { group: "INTEL", name: t("trends"), icon: TrendingUp, href: "/dashboard/trends", roles: ["patient", "doctor", "admin"] },
+        { group: "INTEL", name: "Risk Sentinel", icon: ShieldAlert, href: "/dashboard/risk", roles: ["patient", "doctor", "admin"] },
+        { group: "INTEL", name: t("copilot"), icon: Stethoscope, href: "/dashboard/copilot", roles: ["patient", "doctor", "admin"] },
+        { group: "INTEL", name: t("rehab"), icon: Zap, href: "/dashboard/rehab", roles: ["patient", "doctor", "admin"] },
 
         // COLLABORATION & HISTORY
-        { group: "SYSTEM", name: "Expert Network", icon: Users2, href: "/dashboard/community", roles: ["doctor"] },
-        { group: "SYSTEM", name: t("history"), icon: History, href: "/dashboard/history", roles: ["doctor", "patient", "admin"] },
+        { group: "SYSTEM", name: "Expert Network", icon: Users2, href: "/dashboard/community", roles: ["patient", "doctor", "admin"] },
+        { group: "SYSTEM", name: t("history"), icon: History, href: "/dashboard/history", roles: ["patient", "doctor", "admin"] },
 
         // ADMIN SPECIFIC
         { group: "ADMIN", name: t("userManagement"), icon: Users2, href: "/dashboard/admin/users", roles: ["admin"] },
@@ -64,7 +64,7 @@ export function Sidebar() {
     const menuItems = allItems.filter(item => item.roles.includes(userRole));
 
     // Grouping the items for the UI
-    const groups = ["CORE", "INTEL", "SYSTEM", "ADMIN"];
+    const groups = ["CORE", "LAB", "CARDIO", "INTEL", "SYSTEM", "ADMIN"];
     const filteredGroups = groups.filter(g => menuItems.some(i => i.group === g));
 
     return (
@@ -162,14 +162,11 @@ export function Sidebar() {
                 </div>
             )}
 
-            {/* Role Badge */}
-            {!isCollapsed && (
+            {/* Badge - Admin only */}
+            {!isCollapsed && userRole === 'admin' && (
                 <div className="px-6 py-4">
-                    <div className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] text-center border ${userRole === 'doctor' ? 'bg-[#00D1FF]/5 text-[#00D1FF] border-[#00D1FF]/20' :
-                        userRole === 'admin' ? 'bg-[#7000FF]/5 text-[#7000FF] border-[#7000FF]/20' :
-                            'bg-white/5 text-slate-400 border-white/10'
-                        }`}>
-                        {userRole} Portal Beta
+                    <div className="px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] text-center border bg-[#7000FF]/5 text-[#7000FF] border-[#7000FF]/20">
+                        Admin
                     </div>
                 </div>
             )}
@@ -198,7 +195,7 @@ export function Sidebar() {
                 </button>
             </div>
 
-            {useSettings().isRuralMode && !isCollapsed && (
+            {isRuralMode && !isCollapsed && (
                 <div className="px-6 pb-6">
                     <div className="px-4 py-2 rounded-xl bg-white text-black text-[10px] font-black uppercase tracking-widest text-center">
                         RURAL ACCESS ACTIVE

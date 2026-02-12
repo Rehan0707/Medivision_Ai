@@ -9,9 +9,10 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@babel/runtime": "^7.28.6",
     "@google/generative-ai": "^0.24.1",
-    "@react-three/drei": "^9.121.5",
-    "@react-three/fiber": "^8.18.0",
+    "@react-three/drei": "^10.0.0",
+    "@react-three/fiber": "^9.0.0",
     "clsx": "^2.1.1",
     "framer-motion": "^12.29.2",
     "lucide-react": "^0.563.0",
@@ -19,15 +20,15 @@
     "next": "^16.1.6",
     "next-auth": "^4.24.13",
     "openai": "^6.19.0",
-    "react": "18.3.1",
-    "react-dom": "18.3.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
     "tailwind-merge": "^3.4.0",
     "three": "^0.182.0"
   },
   "devDependencies": {
     "@types/node": "^20",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
     "eslint": "^8",
     "eslint-config-next": "^16.1.6",
     "postcss": "^8",

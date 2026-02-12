@@ -5,7 +5,18 @@ import Doctor from '../models/Doctor';
 
 export const getProfile = async (req: Request, res: Response) => {
     try {
-        const user = await User.findById((req as any).user.id)
+        const userId = (req as any).user?.id;
+        if (userId === 'super-admin-id') {
+            return res.json({
+                _id: 'super-admin-id',
+                name: 'Super Admin',
+                email: process.env.SUPER_ADMIN_EMAIL || 'admin@medivision.ai',
+                role: 'Admin',
+                status: 'Approved'
+            });
+        }
+
+        const user = await User.findById(userId)
             .populate('patientProfile')
             .populate('doctorProfile')
             .populate('adminProfile');
@@ -22,7 +33,12 @@ export const getProfile = async (req: Request, res: Response) => {
 
 export const updateProfile = async (req: Request, res: Response) => {
     try {
-        const user = await User.findById((req as any).user.id);
+        const userId = (req as any).user?.id;
+        if (userId === 'super-admin-id') {
+            return res.json({ message: 'Profile updated (super-admin)', user: { _id: 'super-admin-id', name: 'Super Admin' } });
+        }
+
+        const user = await User.findById(userId);
 
         if (!user) {
             return res.status(404).json({ message: 'User not found' });

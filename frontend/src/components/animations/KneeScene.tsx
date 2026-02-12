@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Float, ContactShadows, Environment, PerspectiveCamera, OrbitControls, MeshDistortMaterial, Sphere } from "@react-three/drei";
 import * as THREE from "three";
@@ -81,8 +81,17 @@ function KneeModel({ hasIssue }: { hasIssue?: boolean }) {
 }
 
 export default function KneeScene({ hasIssue = false }: { hasIssue?: boolean }) {
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => setMounted(true), []);
+
+    if (!mounted) return (
+        <div className="w-full h-full min-h-[400px] bg-[#020617]/50 rounded-[2.5rem] flex items-center justify-center">
+            <div className="text-[#00D1FF] text-[8px] font-black uppercase tracking-[0.4em] animate-pulse">Loading 3D...</div>
+        </div>
+    );
+
     return (
-        <div className="w-full h-full rounded-[2.5rem] overflow-hidden">
+        <div className="w-full h-full min-h-[400px] rounded-[2.5rem] overflow-hidden bg-[#020617]/50">
             <Canvas shadows gl={{ antialias: true }}>
                 <PerspectiveCamera makeDefault position={[0, 0, 8]} fov={35} />
                 <OrbitControls enableDamping dampingFactor={0.05} autoRotate autoRotateSpeed={0.5} />

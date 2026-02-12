@@ -1,17 +1,26 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bone, Activity, ShieldCheck, WifiOff, ArrowRight, Upload, Search, FileText, CheckCircle2, AlertCircle } from "lucide-react";
+import { Bone, Activity, ShieldCheck, WifiOff, ArrowRight, Upload, Search, FileText, CheckCircle2, AlertCircle, Sparkles, Target, Box } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
 const BoneScene = dynamic(() => import("@/components/animations/BoneScene"), { ssr: false });
 const HandScene = dynamic(() => import("@/components/animations/HandScene"), { ssr: false });
 const BrainScene = dynamic(() => import("@/components/animations/BrainScene"), { ssr: false });
 const ThoraxScene = dynamic(() => import("@/components/animations/ThoraxScene"), { ssr: false });
+const LegScene = dynamic(() => import("@/components/animations/LegScene"), { ssr: false });
 import { useSettings } from "@/context/SettingsContext";
+import { apiUrl } from "@/lib/api";
+import XvrRegistrationPanel from "@/components/visualizer/XvrRegistrationPanel";
+
+import { ScanTypeSelector, ScanType } from "@/components/visualizer/ScanTypeSelector";
 
 export default function VisualizerPage() {
     const { isRuralMode, setIsRuralMode, t } = useSettings();
+    const { data: session } = useSession();
+    const searchParams = useSearchParams();
     const [isUploading, setIsUploading] = useState(false);
     const [isAnalyzed, setIsAnalyzed] = useState(false);
     const [analysisData, setAnalysisData] = useState<any>(null);
@@ -19,6 +28,14 @@ export default function VisualizerPage() {
     const [currentImage, setCurrentImage] = useState<string | null>(null);
     const [activeHotspotId, setActiveHotspotId] = useState<string | null>(null);
     const [showSource, setShowSource] = useState(false);
+    const [modality, setModality] = useState<string | null>(null);
+    const [selectedScanType, setSelectedScanType] = useState<ScanType | null>(null);
+    const [xvrData, setXvrData] = useState<any>(null);
+
+    useEffect(() => {
+        const m = searchParams.get("modality");
+        if (m) setModality(m);
+    }, [searchParams]);
 
     const canShow3DModel = !detectedPart.includes("chest") && !detectedPart.includes("lung") && !detectedPart.includes("thorax");
 
@@ -39,13 +56,19 @@ export default function VisualizerPage() {
         setCurrentImage(base64);
 
         try {
-            const res = await fetch('/api/ai/analyze', {
+            const res = await fetch(apiUrl('/api/ai/analyze'), {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${(session as any)?.accessToken}`
+                },
                 body: JSON.stringify({
-                    image: base64,
-                    prompt: `Perform a high-level clinical visual analysis for this medical scan. 
-                    Identify the body part and list specific findings.
+                    imageBase64: base64.split(',')[1],
+                    modality: 'xray',
+                    scanType: selectedScanType, // Pass the selected type to backend
+                    // Prompt refinement based on selection
+                    prompt: `Perform a high-level clinical visual analysis for this ${selectedScanType || 'medical'} X-ray scan. 
+                    Identify the body part and list specific findings relevant to a ${selectedScanType || 'general'} examination.
                     Return ONLY a JSON object:
                     {
                         "detectedPart": "string (e.g. hand, brain, chest, bone)",
@@ -55,11 +78,18 @@ export default function VisualizerPage() {
                     }`
                 })
             });
-            const data = await res.json();
-            const parsedData = JSON.parse(data.text.replace(/```json|```/g, '').trim());
 
+            if (!res.ok) {
+                const errData = await res.json();
+                throw new Error(errData.message || 'AI Analysis failed');
+            }
+
+            const parsedData = await res.json();
             setAnalysisData(parsedData);
-            setDetectedPart(parsedData.detectedPart.toLowerCase());
+
+            // If manual selection exists, prefer it for mapping, or fallback to AI detection
+            // For now, we rely on AI detection but the prompt context helps it be accurate.
+            setDetectedPart(parsedData.detectedPart?.toLowerCase() || "unknown");
             setIsAnalyzed(true);
         } catch (err) {
             console.error("AI Analysis failed:", err);
@@ -80,7 +110,29 @@ export default function VisualizerPage() {
         if (detectedPart.includes("chest") || detectedPart.includes("lung") || detectedPart.includes("thorax")) {
             return <ThoraxScene hasIssue={hasIssue} />;
         }
-        return <BoneScene />;
+        if (detectedPart.includes("leg") || detectedPart.includes("tibia") || detectedPart.includes("fibula")) {
+            return <LegScene hasIssue={hasIssue} />;
+        }
+        if (modality === 'mammography' || detectedPart.includes("breast")) {
+            return (
+                <div className="w-full h-full flex items-center justify-center">
+                    <div className="relative">
+                        <motion.div
+                            animate={{ scale: [1, 1.1, 1], opacity: [0.3, 0.6, 0.3] }}
+                            transition={{ duration: 4, repeat: Infinity }}
+                            className="w-64 h-64 rounded-full bg-pink-500/20 blur-3xl absolute -inset-10"
+                        />
+                        <div className="w-48 h-48 rounded-full border-2 border-dashed border-pink-400/30 flex items-center justify-center relative">
+                            <Sparkles className="text-pink-400 absolute animate-pulse" size={48} />
+                            <div className="text-[10px] font-black text-pink-400 uppercase tracking-[0.3em] text-center px-6">
+                                Mammography Proxy Scene Active
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+        return <BoneScene hasIssue={hasIssue} />;
     };
 
     return (
@@ -111,15 +163,38 @@ export default function VisualizerPage() {
             </div>
 
             {!isAnalyzed && !isUploading ? (
-                <div
-                    onClick={() => document.getElementById('visualizer-upload')?.click()}
-                    className="flex-1 min-h-[500px] rounded-[3rem] border-2 border-dashed border-white/10 bg-white/[0.02] flex flex-col items-center justify-center cursor-pointer hover:bg-white/[0.04] hover:border-[#00D1FF]/40 transition-all group"
-                >
-                    <div className="w-20 h-20 rounded-full bg-[#00D1FF]/10 flex items-center justify-center text-[#00D1FF] mb-6 group-hover:scale-110 transition-transform">
-                        <Upload size={32} />
+                <div className="flex-1 flex flex-col">
+                    {modality === 'xray' && (
+                        <ScanTypeSelector
+                            selectedType={selectedScanType}
+                            onSelect={setSelectedScanType}
+                        />
+                    )}
+
+                    <div
+                        onClick={() => {
+                            if (modality === 'xray' && !selectedScanType) {
+                                alert("Please select an examination protocol first.");
+                                return;
+                            }
+                            document.getElementById('visualizer-upload')?.click();
+                        }}
+                        className={`flex-1 min-h-[400px] rounded-[3rem] border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all group ${(modality === 'xray' && !selectedScanType)
+                                ? 'border-white/5 bg-white/[0.01] opacity-50 cursor-not-allowed'
+                                : 'border-white/10 bg-white/[0.02] hover:bg-white/[0.04] hover:border-[#00D1FF]/40'
+                            }`}
+                    >
+                        <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-6 transition-transform ${(modality === 'xray' && !selectedScanType) ? 'bg-white/5 text-slate-600' : 'bg-[#00D1FF]/10 text-[#00D1FF] group-hover:scale-110'
+                            }`}>
+                            <Upload size={32} />
+                        </div>
+                        <h2 className="text-2xl font-black mb-2">Initialize Neural Render</h2>
+                        <p className="text-slate-500 max-w-sm text-center">
+                            {(modality === 'xray' && !selectedScanType)
+                                ? "Select an examination protocol above to continue."
+                                : "Upload medical imaging data to begin."}
+                        </p>
                     </div>
-                    <h2 className="text-2xl font-black mb-2">Initialize Neural Render</h2>
-                    <p className="text-slate-500 max-w-sm text-center">Upload any medical imaging data (X-ray, MRI, CT) to begin the 3D conversion process.</p>
                 </div>
             ) : isUploading ? (
                 <div className="flex-1 min-h-[500px] flex flex-col items-center justify-center space-y-8">
@@ -156,6 +231,12 @@ export default function VisualizerPage() {
                             <div className="bg-black/60 backdrop-blur-md px-4 py-2 rounded-xl border border-white/10 text-[10px] font-black tracking-widest text-slate-400 uppercase">
                                 Confidence Level: {analysisData?.confidence}%
                             </div>
+                            {xvrData && (
+                                <div className="bg-[#00D1FF]/10 backdrop-blur-md px-4 py-2 rounded-xl border border-[#00D1FF]/20 text-[10px] font-black tracking-widest text-[#00D1FF] uppercase flex items-center gap-2">
+                                    <Target size={12} className="animate-pulse" />
+                                    XVR Alignment: {xvrData.registration_metrics.confidence * 100}%
+                                </div>
+                            )}
                         </div>
 
                         <div className="absolute bottom-10 left-10 right-10 flex justify-between items-end pointer-events-none z-10">
@@ -215,6 +296,13 @@ export default function VisualizerPage() {
                                 )}
                             </div>
                         </div>
+
+                        {currentImage && (
+                            <XvrRegistrationPanel
+                                image={currentImage}
+                                onRegistrationComplete={(data) => setXvrData(data)}
+                            />
+                        )}
 
                         <div className="p-8 glass-morphism rounded-[2rem] border-emerald-500/20 bg-emerald-500/5">
                             <h3 className="font-black text-sm uppercase tracking-[0.2em] mb-4 flex items-center gap-3 text-emerald-400">

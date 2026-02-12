@@ -1,15 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 import { History, FileText, Calendar, Search, Download, ShieldCheck, Lock, MoreHorizontal, Filter, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useSettings } from "@/context/SettingsContext";
+import { apiUrl, authHeaders } from "@/lib/api";
 import { PrintReport } from "@/components/dashboard/PrintReport";
 
 export default function HistoryPage() {
     const { isPrivacyMode, userRole } = useSettings();
+    const { data: session } = useSession();
     const [scans, setScans] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [showFilter, setShowFilter] = useState(false);
     const [printingRecord, setPrintingRecord] = useState<any>(null);
 
     useEffect(() => {
@@ -24,8 +28,11 @@ export default function HistoryPage() {
 
     useEffect(() => {
         async function fetchScans() {
+            if (!session) return;
             try {
-                const res = await fetch('/api/scans');
+                const res = await fetch(apiUrl('/api/scans'), {
+                    headers: authHeaders((session as any).accessToken)
+                });
                 const data = await res.json();
                 setScans(data);
             } catch (err) {
@@ -34,8 +41,8 @@ export default function HistoryPage() {
                 setLoading(false);
             }
         }
-        fetchScans();
-    }, []);
+        if (session) fetchScans();
+    }, [session]);
 
     return (
         <div className="space-y-10 pb-12">
@@ -51,10 +58,21 @@ export default function HistoryPage() {
                     </p>
                 </div>
                 <div className="flex gap-4">
-                    <button className="px-6 py-3 rounded-2xl bg-white/5 border border-white/10 text-xs font-black uppercase tracking-widest hover:bg-white/10 transition-all flex items-center gap-2">
-                        <Filter size={14} /> FILTER
+                    <button onClick={() => setShowFilter(!showFilter)} className="px-6 py-3 rounded-2xl bg-white/5 border border-white/10 text-xs font-black uppercase tracking-widest hover:bg-white/10 transition-all flex items-center gap-2">
+                        <Filter size={14} /> {showFilter ? 'HIDE FILTER' : 'FILTER'}
                     </button>
-                    <button className="px-6 py-3 rounded-2xl bg-[#00D1FF] text-black text-xs font-black uppercase tracking-widest hover:scale-105 transition-all shadow-lg shadow-[#00D1FF]/20">
+                    <button
+                        onClick={() => {
+                            const blob = new Blob([JSON.stringify(scans, null, 2)], { type: 'application/json' });
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = `medivision-scans-${new Date().toISOString().slice(0,10)}.json`;
+                            a.click();
+                            URL.revokeObjectURL(url);
+                        }}
+                        className="px-6 py-3 rounded-2xl bg-[#00D1FF] text-black text-xs font-black uppercase tracking-widest hover:scale-105 transition-all shadow-lg shadow-[#00D1FF]/20"
+                    >
                         EXPORT ALL
                     </button>
                 </div>

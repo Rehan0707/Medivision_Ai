@@ -234,7 +234,19 @@ export default function RiskSentinelPage() {
                             <p className="text-sm text-slate-200 font-bold leading-relaxed mb-6 italic">
                                 "Increasing daily hydration and specific localized stretching can reduce structural risk in the left forearm by up to 34%."
                             </p>
-                            <button className="px-6 py-3 rounded-xl bg-white/5 border border-white/10 text-[10px] font-black text-[#00D1FF] uppercase tracking-widest flex items-center gap-2 hover:bg-[#00D1FF]/10 transition-all">
+                            <button
+                                onClick={() => {
+                                    const plan = { strategy: "Increasing daily hydration and localized stretching", reduction: "34%", region: "left forearm" };
+                                    const blob = new Blob([JSON.stringify(plan, null, 2)], { type: 'application/json' });
+                                    const url = URL.createObjectURL(blob);
+                                    const a = document.createElement('a');
+                                    a.href = url;
+                                    a.download = 'intervention_plan.json';
+                                    a.click();
+                                    URL.revokeObjectURL(url);
+                                }}
+                                className="px-6 py-3 rounded-xl bg-white/5 border border-white/10 text-[10px] font-black text-[#00D1FF] uppercase tracking-widest flex items-center gap-2 hover:bg-[#00D1FF]/10 transition-all"
+                            >
                                 VIEW INTERVENTION PLAN <ChevronRight size={14} />
                             </button>
                         </motion.div>
@@ -319,7 +331,10 @@ export default function RiskSentinelPage() {
                         )}
                     </div>
 
-                    <button className="w-full p-6 rounded-[2rem] border border-dashed border-white/10 hover:border-[#00D1FF]/40 text-[10px] font-black text-slate-500 hover:text-[#00D1FF] uppercase tracking-[0.3em] transition-all flex items-center justify-center gap-3">
+                    <button
+                        onClick={handleExportProfile}
+                        className="w-full p-6 rounded-[2rem] border border-dashed border-white/10 hover:border-[#00D1FF]/40 text-[10px] font-black text-slate-500 hover:text-[#00D1FF] uppercase tracking-[0.3em] transition-all flex items-center justify-center gap-3"
+                    >
                         <Share2 size={14} /> SECURE SHARE WITH CLINIC
                     </button>
                 </div>

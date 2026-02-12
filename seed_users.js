@@ -6,10 +6,11 @@ const path = require('path');
 
 // Load env vars
 dotenv.config({ path: path.join(__dirname, 'backend', '.env') });
+dotenv.config(); // Fallback root .env
 
 const connectDB = async () => {
     try {
-        const conn = await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/medivision');
+        const conn = await mongoose.connect(process.env.MONGODB_URI || process.env.MONGO_URI || 'mongodb://localhost:27017/medivision');
         console.log(`MongoDB Connected: ${conn.connection.host}`);
     } catch (error) {
         console.error(`Error: ${error.message}`);

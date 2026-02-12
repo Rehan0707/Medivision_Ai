@@ -2,15 +2,38 @@
 
 import { motion } from "framer-motion";
 import { TrendingUp, Calendar, Zap, Activity, Info, ArrowUpRight, ArrowDownRight, Microscope, Target } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { apiUrl, authHeaders } from "@/lib/api";
 
 export default function TrendsPage() {
+    const { data: session } = useSession();
     const [timeframe, setTimeframe] = useState("6M");
+    const [bioAnalysis, setBioAnalysis] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        async function fetchTrends() {
+            if (!session) return;
+            try {
+                const res = await fetch(apiUrl('/api/reports/bio-analysis'), {
+                    headers: authHeaders((session as any).accessToken)
+                });
+                const data = await res.json();
+                setBioAnalysis(data);
+            } catch (err) {
+                console.error("Failed to fetch trends:", err);
+            } finally {
+                setLoading(false);
+            }
+        }
+        if (session) fetchTrends();
+    }, [session]);
 
     const metrics = [
-        { label: "Overall Health Score", value: 92, status: "increasing", color: "text-[#00D1FF]" },
-        { label: "Biomarker Stability", value: 88, status: "stable", color: "text-[#7000FF]" },
-        { label: "Recovery Efficiency", value: 94, status: "increasing", color: "text-emerald-400" }
+        { label: "Overall Health Score", value: bioAnalysis?.overallScore || 92, status: "increasing", color: "text-[#00D1FF]" },
+        { label: "Biomarker Stability", value: bioAnalysis?.biomarkerStability || 88, status: "stable", color: "text-[#7000FF]" },
+        { label: "Recovery Efficiency", value: bioAnalysis?.recoveryEfficiency || 94, status: "increasing", color: "text-emerald-400" }
     ];
 
     return (
@@ -68,7 +91,7 @@ export default function TrendsPage() {
                         Neural Vigor Index
                     </h3>
                     <div className="h-64 flex items-end justify-between gap-4 px-4 pb-4 border-b border-l border-white/5">
-                        {[45, 62, 58, 75, 82, 94, 88].map((h, i) => (
+                        {(bioAnalysis?.vigorData || [45, 62, 58, 75, 82, 94, 88]).map((h: number, i: number) => (
                             <motion.div
                                 key={i}
                                 initial={{ height: 0 }}
@@ -102,9 +125,15 @@ export default function TrendsPage() {
                         <p className="text-slate-400 text-sm leading-relaxed mb-10 font-medium">AI has identified patterns that suggest a 15% improvement in cardiovascular endurance if current recovery metrics persist.</p>
                     </div>
                     <div className="space-y-4">
-                        <InsightItem label="Metabolic Optimization" percentage={92} color="bg-[#00D1FF]" />
-                        <InsightItem label="Oxygen Carriage Highs" percentage={76} color="bg-[#7000FF]" />
-                        <InsightItem label="Tissue Regeneration" percentage={84} color="bg-emerald-400" />
+                        {bioAnalysis?.indicators?.map((ind: any, i: number) => (
+                            <InsightItem key={i} label={ind.label} percentage={ind.status === 'Optimal' ? 95 : 70} color={ind.color} />
+                        )) || (
+                                <>
+                                    <InsightItem label="Metabolic Optimization" percentage={92} color="bg-[#00D1FF]" />
+                                    <InsightItem label="Oxygen Carriage Highs" percentage={76} color="bg-[#7000FF]" />
+                                    <InsightItem label="Tissue Regeneration" percentage={84} color="bg-emerald-400" />
+                                </>
+                            )}
                     </div>
                     <button className="w-full py-5 rounded-3xl bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-[0.3em] mt-10 hover:bg-white/10 transition-all">
                         VIEW FULL PROJECTION

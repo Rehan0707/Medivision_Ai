@@ -12,7 +12,7 @@ export interface IReport extends Document {
 }
 
 const ReportSchema: Schema = new Schema({
-    patient: { type: Schema.Types.ObjectId, ref: 'Patient', required: true },
+    patient: { type: Schema.Types.Mixed, required: true }, // ObjectId or "Self" for demo
     doctor: { type: Schema.Types.ObjectId, ref: 'Doctor' },
     scanUrl: { type: String, required: true },
     scanType: { type: String, required: true }, // Removed strict enum to allow Lab Reports

@@ -160,10 +160,16 @@ export default function RehabPage() {
                                 </div>
                             )}
                             <div className="flex gap-4">
-                                <button className="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-md border border-white/10 flex items-center justify-center hover:bg-white/20 transition-all text-white">
+                                <button
+                                    onClick={() => alert(`${activeExercise.plainTitle}: ${activeExercise.plainDescription}`)}
+                                    className="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-md border border-white/10 flex items-center justify-center hover:bg-white/20 transition-all text-white"
+                                >
                                     <Info size={20} />
                                 </button>
-                                <button className="px-8 py-3 rounded-2xl bg-[#00D1FF] text-black font-black text-xs uppercase tracking-widest shadow-xl shadow-[#00D1FF]/20 hover:scale-105 transition-all">
+                                <button
+                                    onClick={() => document.documentElement.requestFullscreen?.()}
+                                    className="px-8 py-3 rounded-2xl bg-[#00D1FF] text-black font-black text-xs uppercase tracking-widest shadow-xl shadow-[#00D1FF]/20 hover:scale-105 transition-all"
+                                >
                                     FULL SCREEN
                                 </button>
                             </div>

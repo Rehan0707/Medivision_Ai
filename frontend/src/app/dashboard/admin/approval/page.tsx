@@ -30,7 +30,7 @@ export default function AdminApprovalPage() {
     const [actioningId, setActioningId] = useState<string | null>(null);
 
     useEffect(() => {
-        if (status === "unauthenticated" || (session?.user as any)?.role !== 'Admin') {
+        if (status === "unauthenticated" || ((session?.user as any)?.role?.toLowerCase?.() ?? '') !== 'admin') {
             router.push("/auth");
         } else {
             fetchPendingDoctors();
@@ -39,7 +39,7 @@ export default function AdminApprovalPage() {
 
     const fetchPendingDoctors = async () => {
         try {
-            const res = await fetch("http://localhost:5001/api/auth/pending-doctors");
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001'}/api/auth/pending-doctors`);
             const data = await res.json();
             setDoctors(data);
         } catch (error) {
@@ -52,7 +52,7 @@ export default function AdminApprovalPage() {
     const handleApproval = async (id: string, approve: boolean) => {
         setActioningId(id);
         try {
-            const res = await fetch("http://localhost:5001/api/auth/approve-doctor", {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001'}/api/auth/approve-doctor`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ id, status: approve ? "Approved" : "Rejected" }),

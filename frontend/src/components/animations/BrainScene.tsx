@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useMemo, useEffect } from "react";
+import { useRef, useMemo, useEffect, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { MeshDistortMaterial, Sphere, Float, ContactShadows, Environment, PerspectiveCamera, OrbitControls, Points, PointMaterial, MeshWobbleMaterial } from "@react-three/drei";
 import * as THREE from "three";
@@ -253,8 +253,17 @@ function BrainCore({ hasIssue }: { hasIssue?: boolean }) {
 }
 
 export default function BrainScene({ hasIssue = false }: { hasIssue?: boolean }) {
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => setMounted(true), []);
+
+    if (!mounted) return (
+        <div className="w-full h-full min-h-[400px] bg-[#020617]/80 rounded-[2rem] flex items-center justify-center">
+            <div className="text-[#00D1FF] text-[8px] font-black uppercase tracking-[0.4em] animate-pulse">Loading 3D...</div>
+        </div>
+    );
+
     return (
-        <div className="w-full h-full bg-[#020617]/80 rounded-[2rem] overflow-hidden">
+        <div className="w-full h-full min-h-[400px] bg-[#020617]/80 rounded-[2rem] overflow-hidden">
             <Canvas shadows gl={{ antialias: true, logarithmicDepthBuffer: true }}>
                 <PerspectiveCamera makeDefault position={[0, 1.5, 6]} fov={30} />
                 <OrbitControls

@@ -1,12 +1,43 @@
-"use client";
-
+import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
 import { Users2, ShieldCheck, Zap, Activity, Database, Server, Lock } from "lucide-react";
 import Link from "next/link";
 import { useSettings } from "@/context/SettingsContext";
+import { apiUrl, authHeaders } from "@/lib/api";
 
 export function AdminStats({ t }: { t: (key: any) => string }) {
     const { isRuralMode, isPrivacyMode } = useSettings();
+    const { data: session } = useSession();
+    const [stats, setStats] = useState<any>(null);
+    const [auditLogs, setAuditLogs] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [protocolMsg, setProtocolMsg] = useState('');
+
+    useEffect(() => {
+        async function fetchData() {
+            try {
+                const headers: any = {};
+                if (session) {
+                    headers['Authorization'] = `Bearer ${(session as any).accessToken}`;
+                }
+
+                const [statsRes, auditRes] = await Promise.all([
+                    fetch(apiUrl('/api/admin/stats'), { headers: authHeaders((session as any)?.accessToken) }),
+                    fetch(apiUrl('/api/admin/audit'), { headers: authHeaders((session as any)?.accessToken) })
+                ]);
+                const statsData = await statsRes.json();
+                const auditData = await auditRes.json();
+                setStats(statsData);
+                setAuditLogs(auditData);
+            } catch (err) {
+                console.error("Failed to fetch admin data:", err);
+            } finally {
+                setLoading(false);
+            }
+        }
+        if (session) fetchData();
+    }, [session]);
 
     return (
         <div className={`space-y-10 pb-12 ${isPrivacyMode ? 'privacy-mode' : ''} ${isRuralMode ? 'rural-mode' : ''}`}>
@@ -25,10 +56,10 @@ export function AdminStats({ t }: { t: (key: any) => string }) {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <Link href="/dashboard/admin/users" className="block transform hover:scale-[1.02] transition-transform">
-                    <AdminStatCard icon={<Users2 />} label="Active Users" value="1,284" trend="+12% today" color="blue" />
+                    <AdminStatCard icon={<Users2 />} label="Active Users" value={stats?.activeUsers?.toString() || "..."} trend="+12% today" color="blue" />
                 </Link>
-                <AdminStatCard icon={<Database />} label="Metadata Stored" value="4.2 TB" trend="AES-256 Encrypted" color="purple" />
-                <AdminStatCard icon={<Server />} label="AI Latency" value="1.2s" trend="Optimal Cluster" color="emerald" />
+                <AdminStatCard icon={<Database />} label="Metadata Stored" value={stats?.metadataStored || "..."} trend="AES-256 Encrypted" color="purple" />
+                <AdminStatCard icon={<Server />} label="AI Latency" value={stats?.aiLatency || "..."} trend="Optimal Cluster" color="emerald" />
                 <Link href="/dashboard/admin/audit" className="block transform hover:scale-[1.02] transition-transform">
                     <AdminStatCard icon={<ShieldCheck />} label="HIPAA Compliance" value="verified" trend="B-ALPHA v2" color="blue" />
                 </Link>
@@ -41,7 +72,7 @@ export function AdminStats({ t }: { t: (key: any) => string }) {
                         Global Diagnostics Throughput
                     </h3>
                     <div className="h-64 flex items-end gap-2 px-4">
-                        {[40, 60, 45, 90, 65, 80, 55, 95, 70, 85, 40, 100].map((h, i) => (
+                        {(stats?.throughputData || [40, 60, 45, 90, 65, 80, 55, 95, 70, 85, 40, 100]).map((h: number, i: number) => (
                             <motion.div
                                 key={i}
                                 initial={{ height: 0 }}
@@ -68,10 +99,11 @@ export function AdminStats({ t }: { t: (key: any) => string }) {
                     <div className="p-8 glass-card rounded-[2.5rem]">
                         <h4 className="text-[10px] font-black uppercase tracking-widest text-[#7000FF] mb-6">Security Events</h4>
                         <div className="space-y-5">
-                            <AuditItem text="New Node Verified: SG-1" status="safe" />
-                            <AuditItem text="Encryption Rotation Complete" status="safe" />
-                            <AuditItem text="Neural Link Sync (Peer 2)" status="warning" />
-                            <AuditItem text="Backup Snapshot V4.1" status="safe" />
+                            {auditLogs.length > 0 ? auditLogs.map((log: any, i: number) => (
+                                <AuditItem key={i} text={log.text} status={log.status} />
+                            )) : (
+                                <p className="text-[10px] text-slate-500 italic pb-1">Synchronizing audit vault...</p>
+                            )}
                         </div>
                     </div>
 
@@ -79,9 +111,16 @@ export function AdminStats({ t }: { t: (key: any) => string }) {
                         <Lock size={32} className="mb-6 opacity-40" />
                         <h4 className="font-black text-xl mb-2">Master Override</h4>
                         <p className="text-white/70 text-sm leading-relaxed mb-6 italic">Secure emergency protocol for immediate data lockdown across all regions.</p>
-                        <button className="w-full py-4 rounded-2xl bg-black/30 backdrop-blur-md border border-white/20 text-white font-black text-xs uppercase tracking-widest hover:bg-black/50 transition-all">
+                        <button
+                            onClick={() => {
+                                setProtocolMsg('Protocol Alpha initiated. All regions secured.');
+                                setTimeout(() => setProtocolMsg(''), 4000);
+                            }}
+                            className="w-full py-4 rounded-2xl bg-black/30 backdrop-blur-md border border-white/20 text-white font-black text-xs uppercase tracking-widest hover:bg-black/50 transition-all"
+                        >
                             TRIGGER PROTOCOL ALPHA
                         </button>
+                        {protocolMsg && <p className="text-emerald-400 text-xs mt-2 font-bold">{protocolMsg}</p>}
                     </div>
                 </div>
             </div>

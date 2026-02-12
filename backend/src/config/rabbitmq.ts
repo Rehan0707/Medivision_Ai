@@ -3,7 +3,7 @@ import amqp from 'amqplib';
 let connection: any = null;
 let channel: any = null;
 
-export const connectRabbitMQ = async () => {
+export const connectRabbitMQ = async (): Promise<typeof channel> => {
     try {
         const amqpServer = process.env.RABBITMQ_URL || 'amqp://localhost';
         connection = await amqp.connect(amqpServer);
@@ -17,7 +17,7 @@ export const connectRabbitMQ = async () => {
         return channel;
     } catch (error) {
         console.error('❌ RabbitMQ Connection Error:', error);
-        return null;
+        throw error; // Re-throw so caller knows it failed
     }
 };
 

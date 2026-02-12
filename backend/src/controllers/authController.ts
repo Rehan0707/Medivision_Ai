@@ -121,6 +121,45 @@ export const getPendingDoctors = async (req: Request, res: Response) => {
     }
 };
 
+// Google Sign-In: Create or find user, return JWT
+export const googleAuth = async (req: Request, res: Response) => {
+    const { email, name, image } = req.body;
+    try {
+        if (!email) return res.status(400).json({ message: 'Email required' });
+
+        let user = await User.findOne({ email })
+            .populate('patientProfile')
+            .populate('doctorProfile')
+            .populate('adminProfile');
+
+        if (!user) {
+            user = new User({
+                name: name || email.split('@')[0],
+                email,
+                role: 'Patient',
+                isApproved: true,
+                status: 'Approved',
+            });
+            const patient = await Patient.create({ user: user._id });
+            user.patientProfile = patient._id as any;
+            await user.save();
+        }
+
+        res.json({
+            _id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            status: user.status,
+            isApproved: user.isApproved,
+            profile: user.patientProfile || user.doctorProfile || user.adminProfile,
+            token: generateToken(user.id),
+        });
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 export const approveDoctor = async (req: Request, res: Response) => {
     const { id, status } = req.body; // status: 'Approved' or 'Rejected'
 

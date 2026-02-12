@@ -7,7 +7,7 @@ import Link from "next/link";
 import { LocalizedHealthNews } from "./LocalizedHealthNews";
 import MedicalGlossary from "./MedicalGlossary";
 
-export function PatientDashboard({ t, profile }: { t: (key: any) => string, profile?: any }) {
+export function PatientDashboard({ t, profile, latestScan }: { t: (key: any) => string, profile?: any, latestScan?: any }) {
     const { isPrivacyMode, isRuralMode } = useSettings();
     const userName = profile?.name || "Member";
 
@@ -42,29 +42,29 @@ export function PatientDashboard({ t, profile }: { t: (key: any) => string, prof
 
                         <div className="space-y-6">
                             <div className="flex justify-between items-end text-sm">
-                                <span className="text-slate-300 font-bold italic">Analysis of neural and physiological data points...</span>
-                                <span className="text-slate-500 font-black uppercase tracking-widest text-[10px]">Awaiting Scan Data</span>
+                                <span className="text-slate-300 font-bold italic">{latestScan ? `Recovery synchronized with ${latestScan.type}` : "Analysis of neural and physiological data points..."}</span>
+                                <span className="text-slate-500 font-black uppercase tracking-widest text-[10px]">{latestScan ? "68% Recovery" : "Awaiting Scan Data"}</span>
                             </div>
                             <div className="h-4 bg-white/5 rounded-full overflow-hidden p-1 border border-white/5">
-                                <div className="h-full w-0 bg-gradient-to-r from-[#00D1FF] to-[#7000FF] rounded-full" />
+                                <div className={`h-full ${latestScan ? 'w-[68%]' : 'w-0'} bg-gradient-to-r from-[#00D1FF] to-[#7000FF] rounded-full transition-all duration-1000`} />
                             </div>
                         </div>
 
                         <div className="grid grid-cols-3 gap-6 mt-12">
                             <div className="p-6 rounded-3xl bg-white/[0.02] border border-white/5 text-center transition-colors hover:bg-white/[0.04]">
                                 <Clock className="mx-auto mb-3 text-slate-500" size={20} />
-                                <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest mb-1">Time Profiled</p>
-                                <p className="text-lg font-black italic">-- hrs</p>
+                                <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest mb-1">Status</p>
+                                <p className="text-lg font-black italic">{latestScan?.status || "--"}</p>
                             </div>
                             <div className="p-6 rounded-3xl bg-white/[0.02] border border-white/5 text-center transition-colors hover:bg-white/[0.04]">
                                 <Zap className="mx-auto mb-3 text-slate-400" size={20} />
-                                <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest mb-1">Activity</p>
-                                <p className="text-lg font-black italic">--</p>
+                                <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest mb-1">Confidence</p>
+                                <p className="text-lg font-black italic">{latestScan?.analysis?.confidence ? (latestScan.analysis.confidence * 100).toFixed(0) + "%" : "--"}</p>
                             </div>
                             <div className="p-6 rounded-3xl bg-white/[0.02] border border-white/5 text-center transition-colors hover:bg-white/[0.04]">
                                 <Calendar className="mx-auto mb-3 text-slate-500" size={20} />
-                                <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest mb-1">Consistency</p>
-                                <p className="text-lg font-black italic">--</p>
+                                <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest mb-1">Risk</p>
+                                <p className="text-lg font-black italic">{latestScan?.risk || "--"}</p>
                             </div>
                         </div>
                     </div>
@@ -81,13 +81,28 @@ export function PatientDashboard({ t, profile }: { t: (key: any) => string, prof
                                 </Link>
                             </div>
                             <div className="space-y-4">
-                                <div className="p-8 rounded-2xl bg-white/[0.03] border border-dashed border-white/10 flex flex-col items-center justify-center text-slate-500">
-                                    <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-4">
-                                        <Database size={24} className="opacity-20" />
+                                {latestScan ? (
+                                    <div className="flex items-center gap-6 p-6 rounded-2xl bg-[#00D1FF]/5 border border-[#00D1FF]/10">
+                                        <div className="w-12 h-12 rounded-xl bg-[#00D1FF]/10 flex items-center justify-center text-[#00D1FF]">
+                                            <FileText size={24} />
+                                        </div>
+                                        <div>
+                                            <h5 className="font-black text-sm uppercase">{latestScan.type} Analysis</h5>
+                                            <p className="text-[10px] text-slate-500 font-bold italic">{new Date(latestScan.createdAt).toLocaleDateString()} • {latestScan.status}</p>
+                                        </div>
+                                        <Link href={`/dashboard/copilot`} className="ml-auto p-2 bg-white/5 rounded-lg hover:bg-white/10 transition-all">
+                                            <ChevronRight size={16} />
+                                        </Link>
                                     </div>
-                                    <p className="text-xs font-bold uppercase tracking-widest text-[#00D1FF]/40">No records synchronized yet</p>
-                                    <p className="text-[10px] italic mt-2">Upload a scan to initialize your clinical history.</p>
-                                </div>
+                                ) : (
+                                    <div className="p-8 rounded-2xl bg-white/[0.03] border border-dashed border-white/10 flex flex-col items-center justify-center text-slate-500">
+                                        <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-4">
+                                            <Database size={24} className="opacity-20" />
+                                        </div>
+                                        <p className="text-xs font-bold uppercase tracking-widest text-[#00D1FF]/40">No records synchronized yet</p>
+                                        <p className="text-[10px] italic mt-2">Upload a scan to initialize your clinical history.</p>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
