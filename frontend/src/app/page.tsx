@@ -108,8 +108,7 @@ export default function Home() {
               transition={{ delay: 0.2 }}
               className="inline-flex items-center gap-3 px-5 py-2.5 rounded-2xl bg-white/[0.03] border border-white/10 text-[10px] font-black text-[#00D1FF] mb-8 md:mb-10"
             >
-              <div className="w-1.5 h-1.5 rounded-full bg-[#00D1FF] animate-pulse" />
-              <span className="tracking-[0.4em] uppercase">NEURAL DIAGNOSTICS v4.2</span>
+              <span className="tracking-[0.4em] uppercase">NEURAL DIAGNOSTICS</span>
             </motion.div>
 
             <motion.h1

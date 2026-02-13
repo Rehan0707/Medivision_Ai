@@ -83,7 +83,7 @@ export default function AdminApprovalClient() {
                         Neural <span className="text-[#00D1FF]">Approval</span> Console
                     </h1>
                     <p className="text-slate-500 font-bold uppercase tracking-[0.3em] text-[10px]">
-                        MediVision AI Administrative Protocol v4.2
+                        MediVision AI Administrative Protocol
                     </p>
                 </div>
                 <Link href="/dashboard" className="px-6 py-2 rounded-xl border border-white/10 text-[10px] font-black uppercase tracking-widest hover:bg-white/5 transition-all">
