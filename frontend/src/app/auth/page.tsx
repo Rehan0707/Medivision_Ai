@@ -360,11 +360,7 @@ export default function AuthPage() {
                                     </form>
                                 </div>
 
-                                <div className="mt-8 text-center">
-                                    <p className="text-[10px] text-slate-500 font-bold tracking-[0.2em] uppercase">
-                                        Secured by <span className="text-[#00D1FF]">Neural-Blockade v4.2</span>
-                                    </p>
-                                </div>
+
                             </div>
 
                             <motion.div
