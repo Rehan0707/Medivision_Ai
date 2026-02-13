@@ -61,7 +61,7 @@ export default function Dashboard() {
 }
 
 function DashboardContent() {
-    const { isRuralMode, isPrivacyMode, userRole, t } = useSettings();
+    const { isRuralMode, isPrivacyMode, userRole, t, profile } = useSettings();
     const { data: session } = useSession();
     const searchParams = useSearchParams();
     const router = useRouter();
@@ -93,7 +93,7 @@ function DashboardContent() {
     const [viewMode, setViewMode] = useState<'3d' | 'slice'>('3d');
     const [isScheduling, setIsScheduling] = useState(false);
     const [isExporting, setIsExporting] = useState(false);
-    const [profile, setProfile] = useState<any>(null);
+
     const [latestScan, setLatestScan] = useState<any>(null);
 
     useEffect(() => {
@@ -112,23 +112,7 @@ function DashboardContent() {
         fetchLatest();
     }, [session]);
 
-    useEffect(() => {
-        const fetchProfile = async () => {
-            if (!session) return;
-            try {
-                const res = await fetch(apiUrl('/api/users/profile'), {
-                    headers: authHeaders((session?.user as any)?.accessToken)
-                });
-                if (res.ok) {
-                    const data = await res.json();
-                    setProfile(data);
-                }
-            } catch (err) {
-                console.error("Profile fetch failed:", err);
-            }
-        };
-        fetchProfile();
-    }, [session]);
+
 
     useEffect(() => {
         const modality = searchParams.get("modality");
@@ -169,15 +153,10 @@ function DashboardContent() {
             ]
         },
         {
-            category: "Cardiac & Vascular",
+            category: "Cardiovascular & Advanced Diagnostics",
             items: [
                 { id: "ecg", name: "ECG / EKG", icon: <HeartPulse size={24} />, description: "Electrical rhythm tracking.", color: "text-rose-500", bg: "bg-rose-500/5", border: "border-rose-500/20" },
-                { id: "stress", name: "Stress Test", icon: <Zap size={24} />, description: "Cardiac load performance.", color: "text-emerald-500", bg: "bg-emerald-500/5", border: "border-emerald-500/20" }
-            ]
-        },
-        {
-            category: "Advanced Specialists",
-            items: [
+                { id: "stress", name: "Stress Test", icon: <Zap size={24} />, description: "Cardiac load performance.", color: "text-emerald-500", bg: "bg-emerald-500/5", border: "border-emerald-500/20" },
                 { id: "oncology", name: "Oncology Reports", icon: <Microscope size={24} />, description: "Cellular morphology audit.", color: "text-violet-400", bg: "bg-violet-400/5", border: "border-violet-400/20" },
                 { id: "biopsy", name: "Histopathology", icon: <Scan size={24} />, description: "Biopsy specimen analysis.", color: "text-fuchsia-400", bg: "bg-fuchsia-400/5", border: "border-fuchsia-400/20" },
                 { id: "genetic", name: "Genetic Testing", icon: <Dna size={24} />, description: "Genomic sequence mapping.", color: "text-blue-500", bg: "bg-blue-500/5", border: "border-blue-500/20" },
@@ -698,20 +677,7 @@ function DashboardContent() {
                                     <div className="lg:col-span-2 space-y-8">
                                         <div className="rounded-[2.5rem] glass-morphism relative overflow-hidden h-[650px] border-white/5 shadow-2xl">
                                             <div className="absolute top-8 left-8 right-8 z-20 flex justify-between items-center">
-                                                <div className="flex bg-black/40 backdrop-blur-md p-1.5 rounded-2xl border border-white/10">
-                                                    <button
-                                                        onClick={() => setViewMode('3d')}
-                                                        className={`px-6 py-2.5 rounded-xl text-xs font-black transition-all ${viewMode === '3d' ? "bg-[#00D1FF] text-black shadow-lg" : "text-slate-400 hover:text-white"}`}
-                                                    >
-                                                        3D MESH
-                                                    </button>
-                                                    <button
-                                                        onClick={() => setViewMode('slice')}
-                                                        className={`px-6 py-2.5 rounded-xl text-xs font-black transition-all ${viewMode === 'slice' ? "bg-[#00D1FF] text-black shadow-lg" : "text-slate-400 hover:text-white"}`}
-                                                    >
-                                                        SLICE VIEW
-                                                    </button>
-                                                </div>
+                                                {/* 3D/Slice Controls Removed */}
                                                 <div className="flex gap-3">
                                                     <button className="p-3 rounded-xl bg-black/40 backdrop-blur-md border border-white/10 text-slate-400 hover:text-[#00D1FF] transition-all">
                                                         <Search size={20} />
@@ -987,10 +953,7 @@ function DashboardContent() {
                                                 </div>
 
                                                 <div className="space-y-4">
-                                                    <button onClick={() => setIsComparing(true)} className="w-full py-5 rounded-2xl bg-[#00D1FF] text-black font-black text-xs uppercase tracking-[0.2em] hover:scale-[1.02] transition-transform shadow-2xl flex items-center justify-center gap-3">
-                                                        <SplitSquareVertical size={18} />
-                                                        SPLIT-VIEW COMPARISON
-                                                    </button>
+                                                    {/* Split View Removed */}
                                                     <button onClick={() => window.print()} className="w-full py-5 rounded-2xl border border-white/10 font-bold text-xs uppercase tracking-widest bg-white/5 hover:bg-white/10 transition-colors">
                                                         GENERATE CLINICAL PDF
                                                     </button>
@@ -1011,13 +974,9 @@ function DashboardContent() {
                                 </div>
 
                                 {/* Interactive Medical Glossary */}
-                                <motion.div
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: 0.4 }}
-                                >
-                                    <MedicalGlossary />
-                                </motion.div>
+                                {
+                                    // Clinical Dictionary Removed
+                                }
                             </motion.div>
                         )}
 

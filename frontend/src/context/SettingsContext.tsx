@@ -197,6 +197,8 @@ const translations = {
     }
 };
 
+import { apiUrl } from "@/lib/api";
+
 interface SettingsContextType {
     language: Language;
     setLanguage: (lang: Language) => void;
@@ -207,6 +209,8 @@ interface SettingsContextType {
     isPrivacyMode: boolean;
     setIsPrivacyMode: (val: boolean) => void;
     t: (key: keyof typeof translations.en) => string;
+    profile: any;
+    refreshProfile: () => Promise<void>;
 }
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
@@ -217,9 +221,29 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     const [isRuralMode, setIsRuralMode] = useState(false);
     const [isPrivacyMode, setIsPrivacyMode] = useState(false);
     const [isInitialized, setIsInitialized] = useState(false);
+    const [profile, setProfile] = useState<any>(null);
+
+    const { data: session } = useSession();
 
     const t = (key: keyof typeof translations.en) => {
         return translations[language][key] || translations.en[key];
+    };
+
+    const refreshProfile = async () => {
+        if (!session?.user) return;
+        try {
+            const res = await fetch(apiUrl('/api/users/profile'), {
+                headers: {
+                    Authorization: `Bearer ${(session as any).accessToken}`
+                }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setProfile(data);
+            }
+        } catch (err) {
+            console.error("Failed to refresh profile:", err);
+        }
     };
 
     // Load settings from localStorage on mount
@@ -237,9 +261,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         setIsInitialized(true);
     }, []);
 
-    // Sync role from session if available
-    const { data: session } = useSession();
-
+    // Sync role from session if available and fetch profile
     useEffect(() => {
         if (session?.user) {
             // @ts-ignore
@@ -248,6 +270,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
             if (sessionRole !== userRole && (sessionRole === 'doctor' || sessionRole === 'admin' || sessionRole === 'patient')) {
                 setUserRole(sessionRole as UserRole);
             }
+            refreshProfile();
         }
     }, [session, userRole]);
 
@@ -287,7 +310,9 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
                 setIsRuralMode,
                 isPrivacyMode,
                 setIsPrivacyMode,
-                t
+                t,
+                profile,
+                refreshProfile
             }}
         >
             {children}

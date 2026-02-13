@@ -34,7 +34,7 @@ export function Sidebar() {
     const allItems = [
         // CORE DIAGNOSTICS
         { group: "CORE", name: t("dashboard"), icon: LayoutDashboard, href: "/dashboard", roles: ["patient", "doctor", "admin"] },
-        { group: "CORE", name: "Patient Portal", icon: Activity, href: "/dashboard/patient-portal", roles: ["patient", "doctor", "admin"] },
+        { group: "CORE", name: "Health Portal", icon: Activity, href: "/dashboard/patient-portal", roles: ["patient", "doctor", "admin"] },
         { group: "CORE", name: "X-Ray 3D", icon: Bone, href: "/dashboard/visualizer?modality=xray", roles: ["patient", "doctor", "admin"] },
         { group: "CORE", name: "MRI 3D", icon: Brain, href: "/dashboard/visualizer?modality=mri", roles: ["patient", "doctor", "admin"] },
         { group: "CORE", name: "CT Scan 3D", icon: Scan, href: "/dashboard/visualizer?modality=ct", roles: ["patient", "doctor", "admin"] },
@@ -50,12 +50,12 @@ export function Sidebar() {
         // INTELLIGENCE & RECOVERY
 
         { group: "INTEL", name: t("trends"), icon: TrendingUp, href: "/dashboard/trends", roles: ["patient", "doctor", "admin"] },
-        { group: "INTEL", name: "Risk Sentinel", icon: ShieldAlert, href: "/dashboard/risk", roles: ["patient", "doctor", "admin"] },
+
         { group: "INTEL", name: t("copilot"), icon: Stethoscope, href: "/dashboard/copilot", roles: ["patient", "doctor", "admin"] },
         { group: "INTEL", name: t("rehab"), icon: Zap, href: "/dashboard/rehab", roles: ["patient", "doctor", "admin"] },
 
         // COLLABORATION & HISTORY
-        { group: "SYSTEM", name: "Expert Network", icon: Users2, href: "/dashboard/community", roles: ["patient", "doctor", "admin"] },
+        // Expert Network Removed
         { group: "SYSTEM", name: t("history"), icon: History, href: "/dashboard/history", roles: ["patient", "doctor", "admin"] },
 
         // ADMIN SPECIFIC

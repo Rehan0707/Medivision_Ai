@@ -219,54 +219,7 @@ export default function RiskSentinelPage() {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <motion.div
-                            whileHover={{ y: -5 }}
-                            className="p-8 rounded-[2.5rem] glass-card border-white/5 bg-white/[0.01] group relative overflow-hidden"
-                        >
-                            <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
-                                <ShieldCheck size={100} />
-                            </div>
-                            <h4 className="font-black text-xs uppercase tracking-[0.2em] text-slate-500 mb-6 flex items-center gap-2">
-                                <TrendingDown size={14} className="text-[#00D1FF]" />
-                                Prevention Strategy
-                            </h4>
-                            <p className="text-sm text-slate-200 font-bold leading-relaxed mb-6 italic">
-                                "Increasing daily hydration and specific localized stretching can reduce structural risk in the left forearm by up to 34%."
-                            </p>
-                            <button
-                                onClick={() => {
-                                    const plan = { strategy: "Increasing daily hydration and localized stretching", reduction: "34%", region: "left forearm" };
-                                    const blob = new Blob([JSON.stringify(plan, null, 2)], { type: 'application/json' });
-                                    const url = URL.createObjectURL(blob);
-                                    const a = document.createElement('a');
-                                    a.href = url;
-                                    a.download = 'intervention_plan.json';
-                                    a.click();
-                                    URL.revokeObjectURL(url);
-                                }}
-                                className="px-6 py-3 rounded-xl bg-white/5 border border-white/10 text-[10px] font-black text-[#00D1FF] uppercase tracking-widest flex items-center gap-2 hover:bg-[#00D1FF]/10 transition-all"
-                            >
-                                VIEW INTERVENTION PLAN <ChevronRight size={14} />
-                            </button>
-                        </motion.div>
 
-                        <motion.div
-                            whileHover={{ y: -5 }}
-                            className="p-8 rounded-[2.5rem] glass-card border-[#7000FF]/20 bg-[#7000FF]/5 group"
-                        >
-                            <h4 className="font-black text-xs uppercase tracking-[0.2em] text-[#7000FF] mb-6 flex items-center gap-2">
-                                <AlertTriangle size={14} className="animate-pulse" />
-                                Critical Window
-                            </h4>
-                            <p className="text-sm text-slate-200 font-bold leading-relaxed mb-6">
-                                The next <span className="text-[#7000FF]">45 days</span> are vital for cardiovascular stabilization. High-intensity signal monitoring recommended.
-                            </p>
-                            <div className="flex items-center gap-2 text-[10px] font-black text-slate-500 uppercase tracking-widest bg-black/20 p-3 rounded-xl w-fit">
-                                <Info size={12} /> PROTOCOL: ACTIVE MONITORING
-                            </div>
-                        </motion.div>
-                    </div>
                 </div>
 
                 {/* Right Sidebar - Risk Inventory */}

@@ -41,6 +41,10 @@ export const analyzeMedicalImage = async (imageBuffer: Buffer, mimeType: string,
         const geminiKey = process.env.GEMINI_API_KEY;
         const openaiKey = process.env.OPENAI_API_KEY;
 
+        console.log("DEBUG: AI Service analysis started");
+        console.log("DEBUG: Gemini Key present:", !!geminiKey, "Length:", geminiKey?.length);
+        console.log("DEBUG: OpenAI Key present:", !!openaiKey, "Length:", openaiKey?.length);
+
 
         const prompt = customPrompt || `Analyze this medical scan image with clinical sovereignty and 99.9% anatomical precision. 
         You MUST return the result as a strictly valid JSON object. 

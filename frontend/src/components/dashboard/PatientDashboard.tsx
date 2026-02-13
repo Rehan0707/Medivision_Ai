@@ -164,46 +164,8 @@ export function PatientDashboard({ t, profile, latestScan }: { t: (key: any) => 
                 </div>
             </div>
 
-            <div className="pt-8 border-t border-white/5">
-                <div className="flex items-center gap-4 mb-10">
-                    <Database className="text-[#00D1FF]" size={24} />
-                    <h2 className="text-2xl font-black uppercase tracking-tight italic">My Health <span className="text-[#00D1FF]">Records</span></h2>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    <NavCategory title="Imaging & Radiology" items={["X-ray", "CT Scan", "MRI", "Sonography (Ultrasound)", "PET Scan", "Mammography"]} color="border-[#00D1FF]/30" accent="text-[#00D1FF]" />
-                    <NavCategory title="Laboratory & Bloodwork" items={["Blood tests (CBC, Sugar, Lipid)", "Urine tests", "Liver function tests", "Kidney function tests", "Thyroid tests", "Hormone tests"]} color="border-[#7000FF]/30" accent="text-[#7000FF]" />
-                    <NavCategory title="Cardiac Diagnostics" items={["ECG / EKG", "Stress test"]} color="border-rose-500/30" accent="text-rose-500" />
-                    <NavCategory title="Advanced Specialists" items={["Oncology reports", "Histopathology (biopsy)", "Genetic testing", "Allergy testing"]} color="border-fuchsia-500/30" accent="text-fuchsia-500" />
-                </div>
-            </div>
-
-            <div className="pt-8 border-t border-white/5">
-                <MedicalGlossary />
-            </div>
+            {/* Medical Glossary Removed */}
         </div>
-    );
-}
-
-function NavCategory({ title, items, color, accent }: { title: string, items: string[], color: string, accent: string }) {
-    return (
-        <motion.div
-            whileHover={{ y: -5 }}
-            className={`p-8 rounded-[2.5rem] bg-white/[0.02] border ${color} hover:bg-white/[0.04] transition-all group`}
-        >
-            <h3 className={`text-xs font-black uppercase tracking-[0.3em] mb-6 ${accent}`}>{title}</h3>
-            <div className="space-y-4">
-                {items.map((item, i) => (
-                    <div key={i} className="flex items-center justify-between group/item cursor-pointer">
-                        <span className="text-[13px] font-bold text-slate-400 group-hover/item:text-white transition-colors">{item}</span>
-                        <ChevronRight size={14} className="text-slate-700 group-hover/item:text-white transition-colors" />
-                    </div>
-                ))}
-            </div>
-            <button className={`w-full mt-8 py-3 rounded-xl bg-white/5 border border-white/5 text-[9px] font-black uppercase tracking-widest hover:bg-white/10 transition-all ${accent}`}>
-                Initialize Records
-            </button>
-        </motion.div>
     );
 }
 

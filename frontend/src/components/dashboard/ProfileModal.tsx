@@ -86,10 +86,10 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                     initial={{ opacity: 0, scale: 0.9, y: 20 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                    className="relative w-full max-w-2xl bg-[#020617] border border-white/10 rounded-[2.5rem] shadow-2xl overflow-hidden"
+                    className="relative w-full max-w-2xl bg-[#020617] border border-white/10 rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col max-h-[85vh]"
                 >
                     {/* Header */}
-                    <div className="p-8 border-b border-white/5 flex justify-between items-center bg-white/[0.02]">
+                    <div className="p-8 border-b border-white/5 flex justify-between items-center bg-white/[0.02] shrink-0">
                         <div className="flex items-center gap-4">
                             <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#00D1FF] to-[#7000FF] flex items-center justify-center shadow-lg shadow-[#00D1FF]/20">
                                 <User size={24} className="text-black" />
@@ -107,7 +107,7 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                         </button>
                     </div>
 
-                    <div className="p-8 space-y-8 max-h-[70vh] overflow-y-auto custom-scrollbar">
+                    <div className="p-8 space-y-8 overflow-y-auto custom-scrollbar flex-1">
                         {message && (
                             <motion.div
                                 initial={{ opacity: 0, y: -10 }}
@@ -173,7 +173,7 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                         {/* Stats / Bio Section */}
                         <div className="p-6 rounded-3xl bg-white/[0.02] border border-white/5 space-y-4">
                             <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#00D1FF]">Account Credentials</h3>
-                            <div className="grid grid-cols-3 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                 <div className="text-center p-4 rounded-2xl bg-white/5 border border-white/5">
                                     <p className="text-[9px] font-black text-slate-500 uppercase mb-1">Status</p>
                                     <p className="text-xs font-bold text-emerald-400 uppercase tracking-tighter">Verified</p>

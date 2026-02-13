@@ -8,9 +8,8 @@ import { PatientDashboard } from "@/components/dashboard/PatientDashboard";
 import { motion } from "framer-motion";
 
 export default function PatientPortalPage() {
-    const { t } = useSettings();
+    const { t, profile } = useSettings();
     const { data: session } = useSession();
-    const [profile, setProfile] = useState<any>(null);
     const [latestScan, setLatestScan] = useState<any>(null);
 
     useEffect(() => {
@@ -27,24 +26,6 @@ export default function PatientPortalPage() {
             }
         };
         fetchLatest();
-    }, [session]);
-
-    useEffect(() => {
-        const fetchProfile = async () => {
-            if (!session) return;
-            try {
-                const res = await fetch(apiUrl('/api/users/profile'), {
-                    headers: authHeaders((session?.user as any)?.accessToken)
-                });
-                if (res.ok) {
-                    const data = await res.json();
-                    setProfile(data);
-                }
-            } catch (err) {
-                console.error("Profile fetch failed:", err);
-            }
-        };
-        fetchProfile();
     }, [session]);
 
     return (

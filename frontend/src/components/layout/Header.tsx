@@ -43,7 +43,7 @@ export function Header() {
                     <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 ml-2">
                         <div className={`w-1.5 h-1.5 rounded-full ${userRole === 'admin' ? 'bg-[#7000FF]' : 'bg-[#00D1FF]'} animate-pulse`} />
                         <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
-                            Access Level: <span className="text-white">{userRole}</span>
+                            Access Level: <span className="text-white">{userRole === 'patient' ? 'Member' : userRole}</span>
                         </span>
                     </div>
 
@@ -98,7 +98,7 @@ export function Header() {
                             {displayName}
                         </p>
                         <p className="text-[10px] text-[#00D1FF] uppercase tracking-[0.3em] font-black">
-                            {user?.role ? `${user.role} Portal` : getRoleName()}
+                            {user?.role === 'patient' || userRole === 'patient' ? 'Member Portal' : `${user?.role || userRole} Portal`}
                         </p>
                     </div>
                     <button

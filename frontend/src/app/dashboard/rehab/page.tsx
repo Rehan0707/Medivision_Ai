@@ -236,8 +236,7 @@ export default function RehabPage() {
                         </div>
                     </div>
 
-                    {/* Doctor Collaboration Sidebar */}
-                    <DoctorCollaboration />
+                    {/* Doctor Collaboration Removed */}
 
                     <div className="p-8 rounded-[2.5rem] bg-[#7000FF]/5 border border-[#7000FF]/20 group hover:bg-[#7000FF]/10 transition-all relative overflow-hidden">
                         <div className="absolute -top-4 -right-4 bg-[#7000FF]/10 w-24 h-24 rounded-full blur-2xl" />

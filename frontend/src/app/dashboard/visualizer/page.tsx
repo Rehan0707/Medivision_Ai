@@ -236,14 +236,9 @@ function VisualizerContent() {
 
                         <div className="absolute bottom-10 left-10 right-10 flex justify-between items-end pointer-events-none z-10">
                             <div className="flex gap-3 pointer-events-auto">
-                                {(!detectedPart.includes("chest") && !detectedPart.includes("lung") && !detectedPart.includes("thorax")) && (
-                                    <button
-                                        onClick={() => setShowSource(!showSource)}
-                                        className={`px-6 py-3 rounded-xl font-black text-xs transition-all shadow-lg ${!showSource ? 'bg-[#00D1FF] text-black' : 'bg-black/60 text-white border border-white/10'}`}
-                                    >
-                                        {!showSource ? "VIEW 3D MODEL" : "VIEW SOURCE X-RAY"}
-                                    </button>
-                                )}
+                                {
+                                    // 3D Model and Split View features removed as per request
+                                }
                                 <button className="px-6 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-xs font-black hover:bg-white/10 transition-all capitalize">
                                     {detectedPart} Analysis
                                 </button>
@@ -313,6 +308,57 @@ function VisualizerContent() {
                             DOWNLOAD 3D ASSET (.STL)
                         </button>
                     </div>
+                </div>
+            )}
+
+            {isAnalyzed && !isUploading && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 border-t border-white/5 pt-8">
+                    <motion.div
+                        whileHover={{ y: -5 }}
+                        className="p-8 rounded-[2.5rem] glass-card border-white/5 bg-white/[0.01] group relative overflow-hidden"
+                    >
+                        <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
+                            <ShieldCheck size={100} />
+                        </div>
+                        <h4 className="font-black text-xs uppercase tracking-[0.2em] text-slate-500 mb-6 flex items-center gap-2">
+                            <ArrowRight size={14} className="text-[#00D1FF] rotate-45" />
+                            Prevention Strategy
+                        </h4>
+                        <p className="text-sm text-slate-200 font-bold leading-relaxed mb-6 italic">
+                            "Increasing daily hydration and specific localized stretching can reduce structural risk in the {detectedPart} by up to 34%."
+                        </p>
+                        <button
+                            onClick={() => {
+                                const plan = { strategy: "Increasing daily hydration and localized stretching", reduction: "34%", region: detectedPart };
+                                const blob = new Blob([JSON.stringify(plan, null, 2)], { type: 'application/json' });
+                                const url = URL.createObjectURL(blob);
+                                const a = document.createElement('a');
+                                a.href = url;
+                                a.download = 'intervention_plan.json';
+                                a.click();
+                                URL.revokeObjectURL(url);
+                            }}
+                            className="px-6 py-3 rounded-xl bg-white/5 border border-white/10 text-[10px] font-black text-[#00D1FF] uppercase tracking-widest flex items-center gap-2 hover:bg-[#00D1FF]/10 transition-all"
+                        >
+                            VIEW INTERVENTION PLAN <ArrowRight size={14} />
+                        </button>
+                    </motion.div>
+
+                    <motion.div
+                        whileHover={{ y: -5 }}
+                        className="p-8 rounded-[2.5rem] glass-card border-[#7000FF]/20 bg-[#7000FF]/5 group"
+                    >
+                        <h4 className="font-black text-xs uppercase tracking-[0.2em] text-[#7000FF] mb-6 flex items-center gap-2">
+                            <AlertCircle size={14} className="animate-pulse" />
+                            Critical Window
+                        </h4>
+                        <p className="text-sm text-slate-200 font-bold leading-relaxed mb-6">
+                            The next <span className="text-[#7000FF]">45 days</span> are vital for {detectedPart} stabilization. High-intensity signal monitoring recommended.
+                        </p>
+                        <div className="flex items-center gap-2 text-[10px] font-black text-slate-500 uppercase tracking-widest bg-black/20 p-3 rounded-xl w-fit">
+                            <AlertCircle size={12} /> PROTOCOL: ACTIVE MONITORING
+                        </div>
+                    </motion.div>
                 </div>
             )}
         </div>

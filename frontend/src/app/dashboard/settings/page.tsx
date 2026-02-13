@@ -8,11 +8,10 @@ import { useSession } from "next-auth/react";
 import { apiUrl, authHeaders } from "@/lib/api";
 
 export default function SettingsPage() {
-    const { isRuralMode, isPrivacyMode, setIsRuralMode, setIsPrivacyMode, userRole } = useSettings();
+    const { isRuralMode, isPrivacyMode, setIsRuralMode, setIsPrivacyMode, userRole, profile, refreshProfile } = useSettings();
     const { data: session } = useSession();
     const [isLoading, setIsLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
-    const [profile, setProfile] = useState<any>(null);
     const [successMessage, setSuccessMessage] = useState("");
 
     // Form states
@@ -40,38 +39,22 @@ export default function SettingsPage() {
     });
 
     useEffect(() => {
-        const fetchProfile = async () => {
-            if (!session?.user) return;
-            setIsLoading(true);
-            try {
-                const res = await fetch(apiUrl('/api/users/profile'), {
-                    headers: authHeaders((session?.user as any)?.accessToken)
-                });
-                const data = await res.json();
-                if (res.ok) {
-                    setProfile(data);
-                    const profileData = data.role === 'Patient' ? data.patientProfile : data.role === 'Doctor' ? data.doctorProfile : {};
-                    setFormData({
-                        name: data.name || "",
-                        email: data.email || "",
-                        phoneNumber: data.phoneNumber || "",
-                        avatar: data.avatar || "",
-                        ...profileData,
-                        dateOfBirth: profileData?.dateOfBirth ? new Date(profileData.dateOfBirth).toISOString().split('T')[0] : "",
-                        // Convert arrays to comma-separated strings for display
-                        medicalHistory: profileData?.medicalHistory?.join(', ') || "",
-                        allergies: profileData?.allergies?.join(', ') || ""
-                    });
-                }
-            } catch (err) {
-                console.error("Failed to fetch profile:", err);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchProfile();
-    }, [session]);
+        if (profile) {
+            const data = profile;
+            const profileData = data.role === 'Patient' ? data.patientProfile : data.role === 'Doctor' ? data.doctorProfile : {};
+            setFormData({
+                name: data.name || "",
+                email: data.email || "",
+                phoneNumber: data.phoneNumber || "",
+                avatar: data.avatar || "",
+                ...profileData,
+                dateOfBirth: profileData?.dateOfBirth ? new Date(profileData.dateOfBirth).toISOString().split('T')[0] : "",
+                // Convert arrays to comma-separated strings for display
+                medicalHistory: profileData?.medicalHistory?.join(', ') || "",
+                allergies: profileData?.allergies?.join(', ') || ""
+            });
+        }
+    }, [profile]);
 
     const handleUpdateProfile = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -101,14 +84,13 @@ export default function SettingsPage() {
             });
 
             if (res.ok) {
-                setSuccessMessage("Identity sync complete. Profile updated.");
-                setTimeout(() => setSuccessMessage(""), 3000);
-                // Refresh local session data if needed
+                setSuccessMessage("Profile updated successfully!");
+                await refreshProfile(); // Refresh global context
             } else {
-                console.error("Update failed with status:", res.status);
+                console.error("Failed to update profile");
             }
         } catch (err) {
-            console.error("Update failed:", err);
+            console.error("Error updating profile:", err);
         } finally {
             setIsSaving(false);
         }
@@ -246,7 +228,7 @@ export default function SettingsPage() {
                             <ToggleSetting
                                 icon={<Lock size={20} />}
                                 title="Privacy Shield"
-                                description="Anonymizes sensitive patient data across all diagnostic views for classroom or remote sharing."
+                                description="Anonymizes sensitive member data across all diagnostic views for classroom or remote sharing."
                                 active={isPrivacyMode}
                                 onToggle={() => setIsPrivacyMode(!isPrivacyMode)}
                             />
