@@ -18,18 +18,31 @@ import {
     Brain,
     Scan,
     Zap,
-    ShieldAlert
+    ShieldAlert,
+    X
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useSettings } from "@/context/SettingsContext";
 import { signOut } from "next-auth/react";
 
-export function Sidebar() {
+interface SidebarProps {
+    isMobileOpen?: boolean;
+    setIsMobileOpen?: (open: boolean) => void;
+}
+
+export function Sidebar({ isMobileOpen = false, setIsMobileOpen }: SidebarProps) {
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const [isCollapsed, setIsCollapsed] = useState(false);
     const { t, userRole, setUserRole, isRuralMode, isPrivacyMode } = useSettings();
+
+    // Close sidebar on route change for mobile
+    useEffect(() => {
+        if (setIsMobileOpen) {
+            setIsMobileOpen(false);
+        }
+    }, [pathname, searchParams, setIsMobileOpen]);
 
     const allItems = [
         // CORE DIAGNOSTICS
@@ -72,35 +85,56 @@ export function Sidebar() {
     return (
         <motion.div
             initial={false}
-            animate={{ width: isCollapsed ? "80px" : "280px" }}
-            className={`h-screen sticky top-0 bg-[#020617]/50 backdrop-blur-xl border-r border-white/5 flex flex-col transition-all duration-300 ease-in-out z-40 ${isPrivacyMode ? 'privacy-mode' : ''} ${isRuralMode ? 'rural-mode' : ''}`}
+            animate={{
+                width: isCollapsed ? "80px" : "280px"
+            }}
+            transition={{
+                width: { duration: 0.3 }
+            }}
+            className={`
+                fixed inset-y-0 left-0 lg:sticky lg:top-0 h-screen 
+                bg-[#020617]/95 lg:bg-[#020617]/50 backdrop-blur-xl border-r border-white/5 
+                flex flex-col transition-transform duration-300 ease-in-out z-40 
+                ${isPrivacyMode ? 'privacy-mode' : ''} ${isRuralMode ? 'rural-mode' : ''}
+                ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+            `}
         >
             {/* Logo Area */}
-            <div className="p-6 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#00D1FF] to-[#7000FF] flex items-center justify-center font-bold text-black shrink-0 shadow-[0_0_15px_rgba(0,209,255,0.3)]">
-                    MV
+            <div className="p-6 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#00D1FF] to-[#7000FF] flex items-center justify-center font-bold text-black shrink-0 shadow-[0_0_15px_rgba(0,209,255,0.3)]">
+                        MV
+                    </div>
+                    {!isCollapsed && (
+                        <motion.span
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className="font-bold text-xl tracking-tight whitespace-nowrap"
+                        >
+                            MediVision <span className="text-[#00D1FF]">AI</span>
+                        </motion.span>
+                    )}
                 </div>
-                {!isCollapsed && (
-                    <motion.span
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="font-bold text-xl tracking-tight whitespace-nowrap"
-                    >
-                        MediVision <span className="text-[#00D1FF]">AI</span>
-                    </motion.span>
-                )}
+
+                {/* Mobile Close Button */}
+                <button
+                    onClick={() => setIsMobileOpen && setIsMobileOpen(false)}
+                    className="lg:hidden p-2 text-slate-400 hover:text-white"
+                >
+                    <X size={20} />
+                </button>
             </div>
 
-            {/* Toggle Button */}
+            {/* Desktop Toggle Button */}
             <button
                 onClick={() => setIsCollapsed(!isCollapsed)}
-                className="absolute -right-3 top-20 w-6 h-6 rounded-full bg-[#00D1FF] text-black flex items-center justify-center hover:scale-110 transition-transform shadow-lg shadow-[#00D1FF]/20"
+                className="hidden lg:flex absolute -right-3 top-20 w-6 h-6 rounded-full bg-[#00D1FF] text-black items-center justify-center hover:scale-110 transition-transform shadow-lg shadow-[#00D1FF]/20"
             >
                 {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
             </button>
 
             {/* Menu Items */}
-            <nav className="flex-1 px-4 mt-10 space-y-8 overflow-y-auto custom-scrollbar">
+            <nav className="flex-1 px-4 mt-4 lg:mt-10 space-y-8 overflow-y-auto custom-scrollbar">
                 {filteredGroups.map((group) => (
                     <div key={group} className="space-y-2">
                         {!isCollapsed && (
@@ -161,7 +195,7 @@ export function Sidebar() {
 
             {/* Vision & Disclaimer Area */}
             {!isCollapsed && (
-                <div className="px-6 mb-6">
+                <div className="px-6 mb-6 mt-auto">
                     <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-3">
                         <div className="flex items-center gap-2 text-[#00D1FF]">
                             <ShieldCheck size={14} />

@@ -1,14 +1,15 @@
 "use client";
 
-import { motion, useScroll, useTransform } from "framer-motion";
-import { Brain, Activity, Bone, FlaskConical, ChevronRight, ShieldCheck, Microscope, Zap, ArrowRight, CheckCircle2, Globe2, Play } from "lucide-react";
+import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
+import { Brain, Activity, Bone, FlaskConical, ChevronRight, ShieldCheck, Microscope, Zap, ArrowRight, CheckCircle2, Globe2, Play, Menu, X } from "lucide-react";
 import dynamic from "next/dynamic";
 const HomeRobot = dynamic(() => import("@/components/home/HomeRobot"), { ssr: false });
 import Link from "next/link";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 
 export default function Home() {
   const containerRef = useRef(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end end"]
@@ -35,7 +36,7 @@ export default function Home() {
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ type: "spring", stiffness: 100, damping: 20 }}
-        className="fixed top-0 left-0 w-full z-50 px-10 py-6 flex justify-between items-center pointer-events-auto bg-[#020617]/20 backdrop-blur-xl"
+        className="fixed top-0 left-0 w-full z-50 px-6 md:px-10 py-6 flex justify-between items-center pointer-events-auto bg-[#020617]/20 backdrop-blur-xl"
       >
         <div className="flex items-center gap-4">
           <motion.div
@@ -46,7 +47,9 @@ export default function Home() {
           </motion.div>
           <span className="text-lg font-black tracking-tight uppercase italic text-white/90">MediVision <span className="text-[#00D1FF]">AI</span></span>
         </div>
-        <div className="flex items-center gap-10">
+
+        {/* Desktop Menu */}
+        <div className="hidden md:flex items-center gap-10">
           <Link href="/keynote" className="text-[10px] font-black uppercase tracking-[0.3em] text-[#00D1FF] hover:text-white transition-all">
             Keynote
           </Link>
@@ -57,11 +60,42 @@ export default function Home() {
             Console Login
           </Link>
         </div>
+
+        {/* Mobile Menu Toggle */}
+        <button
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className="md:hidden p-2 text-white hover:bg-white/5 rounded-xl transition-all"
+        >
+          {isMobileMenuOpen ? <X /> : <Menu />}
+        </button>
+
+        {/* Mobile Menu Overlay */}
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="absolute top-24 left-6 right-6 p-6 rounded-3xl bg-[#020617]/95 backdrop-blur-2xl border border-white/10 shadow-2xl flex flex-col gap-6 md:hidden"
+            >
+              <Link href="/keynote" className="text-sm font-black uppercase tracking-[0.2em] text-[#00D1FF] p-4 bg-white/5 rounded-2xl hover:bg-white/10 transition-all text-center">
+                Keynote
+              </Link>
+              <Link href="/auth" className="text-sm font-black uppercase tracking-[0.2em] text-slate-300 p-4 bg-white/5 rounded-2xl hover:bg-white/10 transition-all text-center">
+                Support
+              </Link>
+              <Link href="/auth" className="p-4 rounded-2xl bg-[#00D1FF] text-black text-sm font-black uppercase tracking-[0.2em] text-center hover:scale-[1.02] transition-all">
+                Console Login
+              </Link>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.nav>
 
       {/* Hero Section */}
-      <section className="relative px-6 pt-56 pb-20 mx-auto max-w-7xl z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
+      {/* Hero Section */}
+      <section className="relative px-6 pt-40 md:pt-56 pb-12 md:pb-20 mx-auto max-w-7xl z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-[40%_60%] gap-12 lg:gap-12 items-center">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -72,7 +106,7 @@ export default function Home() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="inline-flex items-center gap-3 px-5 py-2.5 rounded-2xl bg-white/[0.03] border border-white/10 text-[10px] font-black text-[#00D1FF] mb-10"
+              className="inline-flex items-center gap-3 px-5 py-2.5 rounded-2xl bg-white/[0.03] border border-white/10 text-[10px] font-black text-[#00D1FF] mb-8 md:mb-10"
             >
               <div className="w-1.5 h-1.5 rounded-full bg-[#00D1FF] animate-pulse" />
               <span className="tracking-[0.4em] uppercase">NEURAL DIAGNOSTICS v4.2</span>
@@ -82,7 +116,7 @@ export default function Home() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.8 }}
-              className="text-7xl md:text-[6.5rem] font-black tracking-tighter mb-10 leading-[0.9] text-white"
+              className="text-5xl md:text-7xl lg:text-7xl xl:text-[6rem] font-black tracking-tighter mb-8 md:mb-10 leading-[0.9] text-white"
             >
               Understand Your <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00D1FF] to-[#7000FF] italic">Health.</span>
@@ -92,7 +126,7 @@ export default function Home() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5 }}
-              className="text-lg text-slate-400 mb-14 max-w-lg leading-relaxed font-medium"
+              className="text-base md:text-lg text-slate-400 mb-10 md:mb-14 max-w-lg leading-relaxed font-medium"
             >
               MediVision AI transforms raw clinical data into high-fidelity 3D reconstructions, making the invisible visible for both patients and specialists.
             </motion.p>
@@ -118,12 +152,12 @@ export default function Home() {
           </motion.div>
 
           {/* Hero Animation with Interactive AI Robot + Location Health News */}
-          <div className="relative block perspective-2000 lg:block">
+          <div className="relative block lg:block w-full">
             <motion.div
-              initial={{ opacity: 0, scale: 0.9, rotateY: -10 }}
-              animate={{ opacity: 1, scale: 1, rotateY: 0 }}
-              transition={{ duration: 1.5, ease: "easeOut" }}
-              className="relative z-10"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 1, ease: "easeOut" }}
+              className="relative z-10 w-full"
             >
               <HomeRobot />
             </motion.div>
@@ -143,13 +177,13 @@ export default function Home() {
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
-            className="flex items-center gap-12"
+            className="flex flex-wrap md:flex-nowrap items-center gap-8 md:gap-12"
           >
             <StatItem label="Scans Processed" value="1.2M+" color="text-[#00D1FF]" />
             <StatItem label="Neural Nodes" value="48.5k" color="text-[#7000FF]" />
             <StatItem label="Avg Response" value="0.4s" color="text-emerald-400" />
           </motion.div>
-          <div className="flex-1 max-w-md hidden md:block">
+          <div className="flex-1 max-w-md hidden lg:block">
             <motion.div
               animate={{ borderColor: ["rgba(255,255,255,0.1)", "rgba(0,209,255,0.3)", "rgba(255,255,255,0.1)"] }}
               transition={{ duration: 3, repeat: Infinity }}
@@ -166,8 +200,8 @@ export default function Home() {
       </motion.section>
 
       {/* Solving for Clarity Section */}
-      <section id="vision-section" className="relative px-6 py-32 overflow-hidden">
-        <div className="mx-auto max-w-7xl grid grid-cols-1 md:grid-cols-2 gap-20 items-center">
+      <section id="vision-section" className="relative px-6 py-20 md:py-32 overflow-hidden">
+        <div className="mx-auto max-w-7xl grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -175,7 +209,7 @@ export default function Home() {
             transition={{ duration: 0.8 }}
           >
             <h3 className="text-[#00D1FF]/60 text-[10px] font-black uppercase tracking-[0.5em] mb-6">THE CHALLENGE</h3>
-            <h2 className="text-5xl md:text-6xl font-black mb-10 text-white tracking-tighter leading-none">Complexity is the <br /><span className="text-white/20 italic">new barrier.</span></h2>
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-black mb-10 text-white tracking-tighter leading-none">Complexity is the <br /><span className="text-white/20 italic">new barrier.</span></h2>
             <div className="space-y-4">
               <ChallengeItem text="Clinical imagery remains cryptic to non-specialists." delay={0.1} />
               <ChallengeItem text="Medical jargon creates a knowledge gap between patient and provider." delay={0.2} />
@@ -186,11 +220,11 @@ export default function Home() {
             initial={{ opacity: 0, scale: 0.9 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
-            className="flex flex-col justify-center p-12 rounded-[3rem] bg-gradient-to-br from-[#00D1FF]/10 to-[#7000FF]/10 border border-white/5 relative group"
+            className="flex flex-col justify-center p-8 md:p-12 rounded-[3rem] bg-gradient-to-br from-[#00D1FF]/10 to-[#7000FF]/10 border border-white/5 relative group"
           >
             <div className="absolute inset-0 bg-white/[0.01] backdrop-blur-3xl rounded-[3rem] -z-10" />
             <h3 className="text-[#00D1FF] text-[10px] font-black uppercase tracking-[0.5em] mb-6">OUR VISION</h3>
-            <h2 className="text-4xl font-black mb-10 italic text-white leading-tight">"See the health, <br />understand the journey."</h2>
+            <h2 className="text-3xl md:text-4xl font-black mb-10 italic text-white leading-tight">"See the health, <br />understand the journey."</h2>
             <p className="text-slate-400 leading-relaxed text-lg font-medium max-w-sm">
               We translate clinical complexity into human clarity. Interactive 3D models. Plain-language insights. Universal access.
             </p>
@@ -205,14 +239,14 @@ export default function Home() {
       </section>
 
       {/* Features Grid */}
-      <section className="relative px-6 py-32 border-t border-white/5 bg-slate-900/[0.02]">
+      <section className="relative px-6 py-20 md:py-32 border-t border-white/5 bg-slate-900/[0.02]">
         <div className="mx-auto max-w-7xl">
-          <div className="text-center mb-24">
+          <div className="text-center mb-16 md:mb-24">
             <motion.h2
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="text-5xl md:text-6xl font-black mb-8 text-white tracking-tight"
+              className="text-4xl md:text-5xl lg:text-6xl font-black mb-8 text-white tracking-tight"
             >
               How <span className="text-[#00D1FF] italic">MediVision AI</span> Works
             </motion.h2>
@@ -220,13 +254,13 @@ export default function Home() {
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
-              className="text-slate-400 max-w-2xl mx-auto text-xl font-medium"
+              className="text-slate-400 max-w-2xl mx-auto text-lg md:text-xl font-medium"
             >
               A comprehensive intelligence layer for every aspect of your health.
             </motion.p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
             <FeatureCard
               icon={<Bone className="text-[#00D1FF]" size={28} />}
               title="3D Visualization"
@@ -267,8 +301,8 @@ export default function Home() {
         </div>
       </section>
       {/* Addressing Global Health Equity Section */}
-      <section className="relative px-6 py-32 overflow-hidden bg-white/[0.01]">
-        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-20">
+      <section className="relative px-6 py-20 md:py-32 overflow-hidden bg-white/[0.01]">
+        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
           <div className="flex-1 space-y-10">
             <motion.div
               initial={{ opacity: 0, x: -50 }}
@@ -283,7 +317,7 @@ export default function Home() {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.1 }}
-              className="text-5xl md:text-7xl font-black mb-8 leading-tight text-white tracking-tighter uppercase italic"
+              className="text-4xl md:text-5xl lg:text-7xl font-black mb-8 leading-tight text-white tracking-tighter uppercase italic"
             >
               Solving for <br /><span className="text-emerald-400">Equity.</span>
             </motion.h2>
@@ -292,7 +326,7 @@ export default function Home() {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.2 }}
-              className="text-slate-400 text-xl font-medium leading-relaxed"
+              className="text-slate-400 text-lg md:text-xl font-medium leading-relaxed"
             >
               Advanced diagnostics shouldn't be limited to prime urban centers. MediVision AI includes a dedicated <span className="text-white font-bold">Rural Mode</span>—optimizing for low-bandwidth environments and high-contrast visibility.
             </motion.p>
@@ -317,15 +351,15 @@ export default function Home() {
             initial={{ opacity: 0, scale: 0.8 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
-            className="flex-1 relative"
+            className="flex-1 relative w-full"
           >
-            <div className="p-12 rounded-[5rem] bg-gradient-to-br from-emerald-500/10 to-transparent border border-emerald-500/20 backdrop-blur-2xl">
+            <div className="p-8 md:p-12 rounded-[3rem] md:rounded-[5rem] bg-gradient-to-br from-emerald-500/10 to-transparent border border-emerald-500/20 backdrop-blur-2xl">
               <div className="text-center space-y-8">
                 <div className="w-24 h-24 rounded-[2rem] bg-emerald-500 text-white flex items-center justify-center mx-auto shadow-2xl shadow-emerald-500/20">
                   <Globe2 size={48} />
                 </div>
-                <h3 className="text-4xl font-black italic text-white uppercase tracking-tighter leading-none italic">Democratizing <br />Intelligence.</h3>
-                <div className="flex justify-center gap-4">
+                <h3 className="text-3xl md:text-4xl font-black italic text-white uppercase tracking-tighter leading-none italic">Democratizing <br />Intelligence.</h3>
+                <div className="flex flex-wrap justify-center gap-4">
                   <span className="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-[9px] font-black uppercase text-slate-400">Rural Access Mode</span>
                   <span className="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-[9px] font-black uppercase text-slate-400">E2E Privacy</span>
                 </div>
@@ -335,7 +369,7 @@ export default function Home() {
         </div>
       </section>
       {/* Final CTA */}
-      <section className="px-6 py-40 text-center relative overflow-hidden">
+      <section className="px-6 py-20 md:py-40 text-center relative overflow-hidden">
         <motion.div
           animate={{
             scale: [1, 1.2, 1],
@@ -348,7 +382,7 @@ export default function Home() {
           initial={{ opacity: 0, scale: 0.9 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
-          className="text-6xl md:text-8xl font-black mb-16 leading-tight text-white tracking-tighter"
+          className="text-5xl md:text-6xl lg:text-8xl font-black mb-16 leading-tight text-white tracking-tighter"
         >
           Empowering patients. <br /><span className="gradient-text italic">Supporting doctors.</span>
         </motion.h2>

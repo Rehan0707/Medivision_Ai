@@ -1,11 +1,11 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
 import { useSettings } from "@/context/SettingsContext";
 import { usePathname } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { ShieldAlert, Lock, ChevronLeft } from "lucide-react";
 import Link from "next/link";
 
@@ -16,6 +16,7 @@ export default function DashboardLayoutClient({
 }) {
     const { userRole } = useSettings();
     const pathname = usePathname();
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     // Define access rules - admin routes protected; all other routes available to everyone
     const isAuthorized = () => {
@@ -26,9 +27,9 @@ export default function DashboardLayoutClient({
     if (!isAuthorized()) {
         return (
             <div className="flex min-h-screen bg-[#020617]">
-                <Sidebar />
+                <Sidebar isMobileOpen={isMobileMenuOpen} setIsMobileOpen={setIsMobileMenuOpen} />
                 <div className="flex-1 flex flex-col min-w-0">
-                    <Header />
+                    <Header onMenuClick={() => setIsMobileMenuOpen(true)} />
                     <main className="flex-1 flex items-center justify-center p-8 medical-grid">
                         <motion.div
                             initial={{ opacity: 0, scale: 0.9 }}
@@ -68,15 +69,28 @@ export default function DashboardLayoutClient({
 
     return (
         <div className="flex min-h-screen bg-[#020617]">
-            <Sidebar />
-            <div className="flex-1 flex flex-col min-w-0">
-                <Header />
-                <main className="flex-1 overflow-auto p-8 medical-grid">
+            <Sidebar isMobileOpen={isMobileMenuOpen} setIsMobileOpen={setIsMobileMenuOpen} />
+            <div className="flex-1 flex flex-col min-w-0 transition-all duration-300">
+                <Header onMenuClick={() => setIsMobileMenuOpen(true)} />
+                <main className="flex-1 overflow-auto p-4 md:p-8 medical-grid">
                     <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-[#00D1FF] font-black uppercase tracking-[0.3em] animate-pulse">Initializing Interface...</div>}>
                         {children}
                     </Suspense>
                 </main>
             </div>
+
+            {/* Mobile Backdrop */}
+            <AnimatePresence>
+                {isMobileMenuOpen && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 lg:hidden"
+                    />
+                )}
+            </AnimatePresence>
         </div>
     );
 }

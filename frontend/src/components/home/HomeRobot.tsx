@@ -46,6 +46,26 @@ function formatDate(iso: string) {
   }
 }
 
+const fetchIpLocation = async (): Promise<string | null> => {
+  try {
+    const res = await fetch("https://ipapi.co/json/");
+    if (!res.ok) throw new Error("IP API failed");
+    const data = await res.json();
+    return data.country_code || null;
+  } catch (e) {
+    console.warn("Primary IP Geolocation failed:", e);
+    try {
+      const res2 = await fetch("https://ipwho.is/");
+      if (!res2.ok) throw new Error("Backup IP API failed");
+      const data2 = await res2.json();
+      return data2.country_code || null;
+    } catch (e2) {
+      console.warn("Backup IP Geolocation failed:", e2);
+      return null;
+    }
+  }
+};
+
 export default function HomeRobot() {
   const [locationState, setLocationState] = useState<LocationState>("idle");
   const [locationError, setLocationError] = useState<string | null>(null);
@@ -91,15 +111,36 @@ export default function HomeRobot() {
     }
   }, []);
 
-  const requestLocation = useCallback(async () => {
-    if (!navigator.geolocation) {
-      setLocationError("Location is not supported by your browser.");
-      setLocationState("error");
-      return;
-    }
 
+
+  const requestLocation = useCallback(async () => {
     setLocationState("asking");
     setLocationError(null);
+
+    const handleSuccess = async (code: string) => {
+      setCountryCode(code);
+      setCountryName(COUNTRY_TO_NEWS.get(code) || code);
+      const hasNews = await fetchHealthNews(code);
+      setLocationState("ready");
+      if (hasNews) setNewsExpanded(true);
+    };
+
+    const runFallback = async () => {
+      console.log("Attempting IP-based fallback...");
+      setLocationState("getting");
+      const code = await fetchIpLocation();
+      if (code) {
+        await handleSuccess(code);
+      } else {
+        setLocationState("error");
+        setLocationError("Could not determine your location automatically. Please enable location or try again later.");
+      }
+    };
+
+    if (!navigator.geolocation) {
+      await runFallback();
+      return;
+    }
 
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
@@ -107,25 +148,17 @@ export default function HomeRobot() {
         const { latitude, longitude } = pos.coords;
         const code = await reverseGeocode(latitude, longitude);
         if (!code) {
-          setLocationError("Could not determine your region.");
-          setLocationState("error");
+          await runFallback();
           return;
         }
-        setCountryCode(code);
-        setCountryName(COUNTRY_TO_NEWS.get(code) || code);
-        const hasNews = await fetchHealthNews(code);
-        setLocationState("ready");
-        if (hasNews) setNewsExpanded(true);
+        await handleSuccess(code);
       },
-      (err) => {
-        setLocationState(err.code === 1 ? "denied" : "error");
-        setLocationError(
-          err.code === 1
-            ? "Location access was denied. Enable it to see health news for your area."
-            : err.message || "Could not get your location."
-        );
+      async (err) => {
+        console.warn("Geolocation failed or denied:", err);
+        // If denied (code 1) or any other error, try fallback
+        await runFallback();
       },
-      { enableHighAccuracy: false, timeout: 15000, maximumAge: 3600000 }
+      { enableHighAccuracy: false, timeout: 10000, maximumAge: 3600000 }
     );
   }, [reverseGeocode, fetchHealthNews]);
 
@@ -142,187 +175,219 @@ export default function HomeRobot() {
   const hasNews = articles.length > 0;
 
   return (
-    <div className="relative w-full flex flex-col items-center">
-      {/* Robot */}
-      <div
-        className="relative cursor-pointer"
-        onClick={() => {
-          if (locationState === "idle") requestLocation();
-          else if (locationState === "denied" || locationState === "error") requestLocation();
-        }}
-      >
-        <DoctorBot />
-        {isLoading && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="absolute inset-0 flex items-center justify-center bg-[#020617]/60 rounded-[3rem] z-20"
+    <div className="w-full max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-center gap-12 lg:gap-20 p-4 lg:p-12 min-h-[600px]">
+
+      {/* Robot Section (Left/Center) */}
+      <div className="relative shrink-0 flex flex-col items-center">
+        <div
+          className="relative cursor-pointer transition-transform hover:scale-105 active:scale-95 duration-500"
+          onClick={() => {
+            if (locationState === "idle") requestLocation();
+            else if (locationState === "denied" || locationState === "error") requestLocation();
+          }}
+        >
+          <DoctorBot />
+
+          {isLoading && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="absolute inset-0 flex items-center justify-center bg-[#020617]/60 rounded-[3rem] z-20 backdrop-blur-sm"
+            >
+              <div className="flex flex-col items-center gap-2">
+                <Loader2 className="w-12 h-12 text-[#00D1FF] animate-spin" />
+                <span className="text-[#00D1FF] text-xs font-bold tracking-widest uppercase">
+                  Locating...
+                </span>
+              </div>
+            </motion.div>
+          )}
+        </div>
+
+        {/* Hint when idle and dismissed - Below Robot */}
+        {locationState === "idle" && dismissedPrompt && (
+          <motion.button
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            onClick={requestLocation}
+            className="mt-8 text-[10px] font-bold uppercase tracking-[0.3em] text-slate-500 hover:text-[#00D1FF] transition-colors flex items-center gap-2 bg-white/5 px-4 py-2 rounded-full border border-white/5 hover:border-[#00D1FF]/30"
           >
-            <Loader2 className="w-12 h-12 text-[#00D1FF] animate-spin" />
-          </motion.div>
+            <MapPin size={14} />
+            Check Health News
+          </motion.button>
         )}
+
+        {/* Location permission prompt - Floating below robot */}
+        <AnimatePresence>
+          {showPrompt && !dismissedPrompt && (
+            <motion.div
+              initial={{ opacity: 0, y: 10, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -10, scale: 0.95 }}
+              className="absolute top-full mt-6 left-1/2 -translate-x-1/2 z-30 w-[90vw] max-w-sm"
+            >
+              <div className="p-5 rounded-2xl bg-[#0f172a]/90 backdrop-blur-xl border border-[#00D1FF]/30 shadow-2xl shadow-[#00D1FF]/20 ring-1 ring-[#00D1FF]/20">
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-[#00D1FF]/10 flex items-center justify-center shrink-0 border border-[#00D1FF]/20">
+                    <MapPin className="text-[#00D1FF]" size={20} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-sm font-bold text-white mb-1">Local Health Intel</h4>
+                    <p className="text-xs text-slate-400 mb-4 leading-relaxed">
+                      {locationState === "denied" || locationState === "error"
+                        ? locationError
+                        : "Enable location access to receive real-time health news and alerts for your region."}
+                    </p>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={requestLocation}
+                        className="px-4 py-2 rounded-lg bg-[#00D1FF] text-black text-[10px] font-black uppercase tracking-widest hover:bg-[#00D1FF]/90 transition-all active:scale-95 shadow-lg shadow-[#00D1FF]/20"
+                      >
+                        {locationState === "denied" || locationState === "error" ? "Retry" : "Enable"}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setDismissedPrompt(true);
+                          setLocationState("idle");
+                        }}
+                        className="px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-slate-400 text-[10px] font-bold uppercase tracking-widest hover:bg-white/10 hover:text-white transition-all active:scale-95"
+                      >
+                        Later
+                      </button>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setDismissedPrompt(true);
+                      setLocationState("idle");
+                    }}
+                    className="p-1 rounded-lg text-slate-500 hover:text-white hover:bg-white/5 transition-colors"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
-      {/* Location permission prompt */}
-      <AnimatePresence>
-        {showPrompt && !dismissedPrompt && (
+      {/* Health News Section (Right Side) */}
+      <AnimatePresence mode="wait">
+        {(hasNews || newsError) && locationState === "ready" && (
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="absolute -bottom-4 left-1/2 -translate-x-1/2 z-30 w-full max-w-md px-4"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className="w-full max-w-md lg:h-[500px] flex flex-col justify-center"
           >
-            <div className="p-5 rounded-2xl bg-[#0f172a] border border-[#00D1FF]/30 shadow-xl shadow-[#00D1FF]/5">
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[#00D1FF]/10 flex items-center justify-center shrink-0">
-                  <MapPin className="text-[#00D1FF]" size={20} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h4 className="text-sm font-bold text-white mb-1">Enable location for health news</h4>
-                  <p className="text-xs text-slate-400 mb-4">
-                    {locationState === "denied" || locationState === "error"
-                      ? locationError
-                      : "Allow access to show health news relevant to your area."}
-                  </p>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={requestLocation}
-                      className="px-4 py-2 rounded-xl bg-[#00D1FF] text-black text-[10px] font-black uppercase tracking-widest hover:bg-[#00D1FF]/90 transition-colors"
-                    >
-                      {locationState === "denied" || locationState === "error" ? "Try again" : "Allow"}
-                    </button>
-                    <button
-                      onClick={() => {
-                        setDismissedPrompt(true);
-                        setLocationState("idle");
-                      }}
-                      className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-slate-400 text-[10px] font-bold uppercase tracking-widest hover:bg-white/10 transition-colors"
-                    >
-                      Not now
-                    </button>
+            <div className="bg-[#0f172a]/40 backdrop-blur-md rounded-3xl border border-white/5 overflow-hidden flex flex-col max-h-[600px]">
+              {/* Header */}
+              <div
+                onClick={() => setNewsExpanded(!newsExpanded)}
+                className="p-5 border-b border-white/5 bg-white/[0.02] flex items-center justify-between cursor-pointer group hover:bg-white/[0.04] transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-[#00D1FF]/10 text-[#00D1FF]">
+                    <Newspaper size={18} />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-white">Health Briefing</h3>
+                    <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">
+                      {countryName ? `Live from ${countryName}` : "Global Updates"}
+                    </p>
                   </div>
                 </div>
-                <button
-                  onClick={() => {
-                    setDismissedPrompt(true);
-                    setLocationState("idle");
-                  }}
-                  className="p-1 rounded-lg text-slate-500 hover:text-white hover:bg-white/5"
-                >
-                  <X size={16} />
-                </button>
+                <ChevronDown
+                  size={18}
+                  className={`text-slate-500 transition-transform duration-300 ${newsExpanded ? "rotate-180" : ""}`}
+                />
+              </div>
+
+              {/* Content */}
+              <AnimatePresence initial={false}>
+                {newsExpanded && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="p-4 space-y-3 overflow-y-auto max-h-[400px] custom-scrollbar">
+                      {newsError && !hasNews && (
+                        <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-start gap-3">
+                          <ShieldAlert className="text-amber-500 shrink-0 mt-0.5" size={16} />
+                          <p className="text-xs text-amber-200/90 leading-relaxed">{newsError}</p>
+                        </div>
+                      )}
+
+                      {articles.slice(0, 6).map((art, i) => (
+                        <motion.a
+                          key={art.url || i}
+                          href={art.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          initial={{ opacity: 0, x: 10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: i * 0.1 }}
+                          className="flex gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:border-[#00D1FF]/30 hover:bg-white/[0.06] transition-all group relative overflow-hidden"
+                        >
+                          <div className="absolute inset-0 bg-gradient-to-r from-[#00D1FF]/0 via-[#00D1FF]/5 to-[#00D1FF]/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+
+                          {art.urlToImage && (
+                            <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0 bg-white/5 mt-1">
+                              <img
+                                src={art.urlToImage}
+                                alt=""
+                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                              />
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0 flex flex-col">
+                            <h5 className="text-xs font-bold text-slate-200 group-hover:text-[#00D1FF] transition-colors line-clamp-2 leading-snug mb-1">
+                              {art.title}
+                            </h5>
+                            <div className="mt-auto flex items-center justify-between pt-2 border-t border-white/5">
+                              <div className="flex items-center gap-2">
+                                {art.source && (
+                                  <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider truncate max-w-[80px]">
+                                    {art.source}
+                                  </span>
+                                )}
+                                <span className="text-[9px] text-slate-600">•</span>
+                                <span className="text-[9px] text-slate-500">
+                                  {formatDate(art.publishedAt || "")}
+                                </span>
+                              </div>
+                              <ExternalLink size={10} className="text-slate-600 group-hover:text-[#00D1FF] transition-colors" />
+                            </div>
+                          </div>
+                        </motion.a>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Footer status bar (visible when collapsed too) */}
+              <div className="px-5 py-3 bg-black/20 border-t border-white/5 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="text-[10px] text-slate-400 font-medium tracking-wide">
+                    {articles.length} Updates Live
+                  </span>
+                </div>
+                {/* Expand/Collapse Text hint */}
+                <span className="text-[10px] text-[#00D1FF]/60 font-mono">
+                  {newsExpanded ? "READING MODE" : "STANDBY"}
+                </span>
               </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Health news section */}
-      {(hasNews || newsError) && locationState === "ready" && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="w-full max-w-2xl mt-12"
-        >
-          <button
-            onClick={() => setNewsExpanded(!newsExpanded)}
-            className="w-full flex items-center justify-between gap-4 p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-[#00D1FF]/30 transition-colors text-left"
-          >
-            <div className="flex items-center gap-3">
-              <Newspaper className="text-[#00D1FF]" size={20} />
-              <span className="text-sm font-bold text-white">
-                Health news {countryName ? `in ${countryName}` : ""}
-              </span>
-            </div>
-            <ChevronDown
-              size={20}
-              className={`text-slate-500 transition-transform ${newsExpanded ? "rotate-180" : ""}`}
-            />
-          </button>
-
-          {newsError && !hasNews && (
-            <div className="mt-4 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center gap-3">
-              <ShieldAlert className="text-amber-500 shrink-0" size={20} />
-              <p className="text-sm text-amber-200/90">{newsError}</p>
-            </div>
-          )}
-
-          <AnimatePresence>
-            {newsExpanded && hasNews && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                className="overflow-hidden"
-              >
-                <div className="mt-4 space-y-4">
-                  {articles.slice(0, 5).map((art, i) => (
-                    <motion.a
-                      key={art.url || i}
-                      href={art.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: i * 0.05 }}
-                      className="block p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-[#00D1FF]/30 hover:bg-white/[0.04] transition-all group"
-                    >
-                      <div className="flex gap-4">
-                        {art.urlToImage && (
-                          <div className="w-20 h-20 rounded-xl overflow-hidden shrink-0 bg-white/5">
-                            <img
-                              src={art.urlToImage}
-                              alt=""
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <h5 className="text-sm font-bold text-white group-hover:text-[#00D1FF] transition-colors line-clamp-2">
-                            {art.title}
-                          </h5>
-                          {art.description && (
-                            <p className="text-xs text-slate-500 mt-1 line-clamp-2">{art.description}</p>
-                          )}
-                          <div className="flex items-center gap-2 mt-2">
-                            {art.source && (
-                              <span className="text-[10px] text-slate-600 uppercase tracking-wider">
-                                {art.source}
-                              </span>
-                            )}
-                            {art.publishedAt && (
-                              <span className="text-[10px] text-slate-600">
-                                · {formatDate(art.publishedAt)}
-                              </span>
-                            )}
-                            <ExternalLink
-                              size={12}
-                              className="text-slate-500 group-hover:text-[#00D1FF] ml-auto"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </motion.a>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
-      )}
-
-      {/* Hint when idle and dismissed */}
-      {locationState === "idle" && dismissedPrompt && (
-        <motion.button
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          onClick={requestLocation}
-          className="mt-6 text-[10px] font-bold uppercase tracking-[0.3em] text-slate-500 hover:text-[#00D1FF] transition-colors flex items-center gap-2"
-        >
-          <MapPin size={14} />
-          Get health news for my area
-        </motion.button>
-      )}
     </div>
   );
 }

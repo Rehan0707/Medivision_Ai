@@ -675,8 +675,8 @@ function DashboardContent() {
 
                                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                                     <div className="lg:col-span-2 space-y-8">
-                                        <div className="rounded-[2.5rem] glass-morphism relative overflow-hidden h-[650px] border-white/5 shadow-2xl">
-                                            <div className="absolute top-8 left-8 right-8 z-20 flex justify-between items-center">
+                                        <div className="rounded-[2.5rem] glass-morphism relative overflow-hidden h-[400px] md:h-[650px] border-white/5 shadow-2xl">
+                                            <div className="absolute top-4 left-4 right-4 md:top-8 md:left-8 md:right-8 z-20 flex justify-between items-center">
                                                 {/* 3D/Slice Controls Removed */}
                                                 <div className="flex gap-3">
                                                     <button className="p-3 rounded-xl bg-black/40 backdrop-blur-md border border-white/10 text-slate-400 hover:text-[#00D1FF] transition-all">

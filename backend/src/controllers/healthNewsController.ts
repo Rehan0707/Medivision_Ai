@@ -22,32 +22,57 @@ export const getHealthNews = async (req: Request, res: Response) => {
     ]);
 
     if (!validCountries.has(countryCode)) {
-        return res.status(400).json({
-            error: 'Invalid country code',
-            message: `Country must be a 2-letter ISO code. Got: ${countryCode}`,
-        });
+        console.warn(`Country '${countryCode}' not supported by NewsAPI. Falling back to 'us'.`);
+        // Fallback to US instead of erroring
+        // countryCode = 'us'; // variable is const so we need to change how we declare it or use a new variable
     }
+    const finalCountryCode = validCountries.has(countryCode) ? countryCode : 'us';
 
     try {
-        const url = `${NEWS_API_BASE}/top-headlines?country=${countryCode}&category=health&pageSize=10&apiKey=${apiKey}`;
-        const fetchRes = await fetch(url);
-        const data = await fetchRes.json();
+        let articles = [];
+        let totalResults = 0;
 
-        if (data.status === 'error') {
-            return res.status(502).json({
-                error: 'News API error',
-                message: data.message || 'Failed to fetch health news',
-            });
-        }
+        if (apiKey.startsWith('pub_')) {
+            // NewsData.io API
+            // Note: validation of country codes strictly might fail here if newsdata supports more/different, but standard ones overlap.
+            const url = `https://newsdata.io/api/1/news?apikey=${apiKey}&country=${finalCountryCode}&category=health`;
+            const fetchRes = await fetch(url);
+            const data = await fetchRes.json();
 
-        const articles = (data.articles || []).filter(
-            (a: any) => a.title && a.title !== '[Removed]' && a.url
-        );
+            if (data.status === 'error') {
+                // newsdata.io error
+                return res.status(502).json({
+                    error: 'NewsData API error',
+                    message: data.results?.message || 'Failed to fetch health news',
+                });
+            }
 
-        res.json({
-            country: countryCode.toUpperCase(),
-            totalResults: data.totalResults || 0,
-            articles: articles.map((a: any) => ({
+            totalResults = data.totalResults || 0;
+            articles = (data.results || []).map((a: any) => ({
+                title: a.title,
+                description: a.description,
+                url: a.link,
+                urlToImage: a.image_url, // newsdata uses image_url
+                source: a.source_id,     // newsdata uses source_id
+                author: a.creator ? a.creator[0] : null,
+                publishedAt: a.pubDate,  // newsdata uses pubDate
+            }));
+
+        } else {
+            // NewsAPI.org (Default)
+            const url = `${NEWS_API_BASE}/top-headlines?country=${finalCountryCode}&category=health&pageSize=10&apiKey=${apiKey}`;
+            const fetchRes = await fetch(url);
+            const data = await fetchRes.json();
+
+            if (data.status === 'error') {
+                return res.status(502).json({
+                    error: 'News API error',
+                    message: data.message || 'Failed to fetch health news',
+                });
+            }
+
+            totalResults = data.totalResults || 0;
+            articles = (data.articles || []).map((a: any) => ({
                 title: a.title,
                 description: a.description,
                 url: a.url,
@@ -55,7 +80,18 @@ export const getHealthNews = async (req: Request, res: Response) => {
                 source: a.source?.name,
                 author: a.author,
                 publishedAt: a.publishedAt,
-            })),
+            }));
+        }
+
+        // Filter valid articles
+        const validArticles = articles.filter(
+            (a: any) => a.title && a.title !== '[Removed]' && a.url
+        );
+
+        res.json({
+            country: finalCountryCode.toUpperCase(),
+            totalResults: totalResults,
+            articles: validArticles
         });
     } catch (err: any) {
         console.error('Health news fetch error:', err);

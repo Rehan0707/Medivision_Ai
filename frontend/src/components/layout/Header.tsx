@@ -1,12 +1,16 @@
 "use client";
 
-import { Search, User, Wifi, WifiOff, ShieldCheck, ShieldAlert, LogOut } from "lucide-react";
+import { Search, User, Wifi, WifiOff, ShieldCheck, ShieldAlert, LogOut, Menu } from "lucide-react";
 import { useSettings } from "@/context/SettingsContext";
 import { useState } from "react";
 import { ProfileModal } from "../dashboard/ProfileModal";
 import { useSession, signOut } from "next-auth/react";
 
-export function Header() {
+interface HeaderProps {
+    onMenuClick?: () => void;
+}
+
+export function Header({ onMenuClick }: HeaderProps) {
     const { data: session } = useSession();
     const {
         isRuralMode, setIsRuralMode,
@@ -28,9 +32,17 @@ export function Header() {
     };
 
     return (
-        <header className="h-20 border-b border-white/5 bg-[#020617]/80 backdrop-blur-md sticky top-0 z-30 px-8 flex items-center justify-between">
-            <div className="flex items-center gap-6 flex-1">
-                <div className="relative max-w-sm w-full">
+        <header className="h-16 md:h-20 border-b border-white/5 bg-[#020617]/80 backdrop-blur-md sticky top-0 z-30 px-4 md:px-8 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4 flex-1">
+                {/* Mobile Menu Button */}
+                <button
+                    onClick={onMenuClick}
+                    className="p-2 -ml-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 lg:hidden"
+                >
+                    <Menu size={24} />
+                </button>
+
+                <div className="relative max-w-sm w-full hidden md:block">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
                     <input
                         type="text"
@@ -38,8 +50,12 @@ export function Header() {
                         className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm focus:outline-none focus:border-[#00D1FF]/50 transition-all font-medium"
                     />
                 </div>
+                {/* Mobile Search Icon */}
+                <button className="md:hidden p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/5">
+                    <Search size={20} />
+                </button>
 
-                <div className="hidden lg:flex items-center gap-3">
+                <div className="hidden xl:flex items-center gap-3">
                     <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 ml-2">
                         <div className={`w-1.5 h-1.5 rounded-full ${userRole === 'admin' ? 'bg-[#7000FF]' : 'bg-[#00D1FF]'} animate-pulse`} />
                         <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
@@ -86,14 +102,14 @@ export function Header() {
                 </div>
             </div>
 
-            <div className="flex items-center gap-6">
+            <div className="flex items-center gap-3 md:gap-6">
                 <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20">
                     <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                     <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-400">Live</span>
                 </div>
 
-                <div className="flex items-center gap-4 pl-6 border-l border-white/10 ml-2">
-                    <div className="text-right hidden sm:block">
+                <div className="flex items-center gap-2 md:gap-4 pl-0 md:pl-6 md:border-l border-white/10 ml-0 md:ml-2">
+                    <div className="text-right hidden md:block">
                         <p className={`text-sm font-black tracking-tight ${isPrivacyMode ? 'patient-data' : ''}`}>
                             {displayName}
                         </p>
@@ -103,16 +119,16 @@ export function Header() {
                     </div>
                     <button
                         onClick={() => setIsProfileOpen(true)}
-                        className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#00D1FF] to-[#7000FF] p-[1px] group shadow-lg shadow-[#00D1FF]/20 hover:scale-105 transition-all"
+                        className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-gradient-to-tr from-[#00D1FF] to-[#7000FF] p-[1px] group shadow-lg shadow-[#00D1FF]/20 hover:scale-105 transition-all"
                     >
                         <div className="w-full h-full rounded-[15px] bg-[#020617] flex items-center justify-center overflow-hidden">
-                            <User size={24} className="text-[#00D1FF]" />
+                            <User size={20} className="text-[#00D1FF] md:w-6 md:h-6" />
                         </div>
                     </button>
                     {session && (
                         <button
                             onClick={() => signOut({ callbackUrl: '/auth' })}
-                            className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 hover:bg-red-500/20 transition-all"
+                            className="hidden sm:block p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 hover:bg-red-500/20 transition-all"
                             title="Sign Out"
                         >
                             <LogOut size={20} />
