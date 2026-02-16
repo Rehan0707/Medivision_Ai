@@ -4,7 +4,11 @@ import OpenAI from 'openai';
 import path from 'path';
 
 // Load env from backend root
-dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+const envPath = path.resolve(__dirname, '../.env');
+console.log(`Debug: .env path resolved to: ${envPath}`);
+const fs = require('fs');
+console.log(`Debug: .env file exists? ${fs.existsSync(envPath)}`);
+dotenv.config({ path: envPath });
 
 const testOpenAI = async () => {
     console.log("Testing OpenAI Connection...");

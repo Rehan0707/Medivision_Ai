@@ -95,6 +95,9 @@ export const analyzeMedicalImage = async (imageBuffer: Buffer, mimeType: string,
                 return JSON.parse(response.choices[0].message.content || '{}');
             } catch (err: any) {
                 console.warn('OpenAI failed, trying Gemini...', err.message);
+                if (err.response) {
+                    console.error('OpenAI Error Details:', JSON.stringify(err.response.data));
+                }
             }
         }
 
