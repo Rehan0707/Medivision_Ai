@@ -15,9 +15,14 @@ export const connectRabbitMQ = async (): Promise<typeof channel> => {
 
         console.log('✅ Connected to RabbitMQ');
         return channel;
-    } catch (error) {
-        console.error('❌ RabbitMQ Connection Error:', error);
-        throw error; // Re-throw so caller knows it failed
+    } catch (error: any) {
+        // Only log a simple warning if usage is optional/local
+        if (error.code === 'ECONNREFUSED' || error.message.includes('ECONNREFUSED')) {
+            console.warn('⚠️ RabbitMQ Connection Failed: Service not running on localhost:5672');
+        } else {
+            console.error('❌ RabbitMQ Connection Error:', error.message);
+        }
+        throw new Error('RabbitMQ Unavailable'); // Re-throw simple error so caller knows it failed
     }
 };
 

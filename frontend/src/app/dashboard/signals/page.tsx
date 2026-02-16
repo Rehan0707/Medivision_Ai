@@ -108,7 +108,9 @@ function EcgAnalysisSection({ onAnalysisComplete }: { onAnalysisComplete: (resul
         setStatusMessage("Queuing ECG analysis job...");
 
         try {
-            const res = await fetch(apiUrl('/api/ai/analyze-ecg-async'), {
+            const url = apiUrl('/api/ai/analyze-ecg-async');
+            console.log("Fetching ECG analysis from:", url);
+            const res = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ecgData: "SAMPLE_KAGGLE_ID", samplingRate: 500 })

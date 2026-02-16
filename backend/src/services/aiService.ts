@@ -72,45 +72,45 @@ export const analyzeMedicalImage = async (imageBuffer: Buffer, mimeType: string,
         }`;
 
 
-        // Try Gemini First
-        if (geminiKey && geminiKey !== 'PLACEHOLDER' && geminiKey.length > 10) {
+        // Try OpenAI First (Prioritized due to Gemini Quota issues)
+        if (openaiKey && openaiKey.length > 10) {
             try {
-                const model = getGenAI().getGenerativeModel({ model: 'gemini-2.0-flash' });
-
-                const result = await retryOperation(() => model.generateContent([
-                    prompt,
-                    { inlineData: { data: imageBuffer.toString('base64'), mimeType } }
-                ]));
-
-                const response = await result.response;
-                const text = response.text();
-                const jsonMatch = text.match(/\{[\s\S]*\}/);
-                if (jsonMatch) return JSON.parse(jsonMatch[0]);
-            } catch (err) {
-                console.warn('Gemini failed, trying OpenAI...', err);
+                const response = await getOpenAI().chat.completions.create({
+                    model: "gpt-4o-mini",
+                    messages: [
+                        { role: "system", content: "You are a world-class radiologist. Always return JSON." },
+                        {
+                            role: "user",
+                            content: [
+                                { type: "text", text: prompt },
+                                {
+                                    type: "image_url",
+                                    image_url: { url: `data:${mimeType};base64,${imageBuffer.toString('base64')}` }
+                                }
+                            ]
+                        }
+                    ],
+                    response_format: { type: "json_object" }
+                });
+                return JSON.parse(response.choices[0].message.content || '{}');
+            } catch (err: any) {
+                console.warn('OpenAI failed, trying Gemini...', err.message);
             }
         }
 
-        // Try OpenAI Fallback
-        if (openaiKey && openaiKey.length > 10) {
-            const response = await getOpenAI().chat.completions.create({
-                model: "gpt-4o-mini",
-                messages: [
-                    { role: "system", content: "You are a world-class radiologist. Always return JSON." },
-                    {
-                        role: "user",
-                        content: [
-                            { type: "text", text: prompt },
-                            {
-                                type: "image_url",
-                                image_url: { url: `data:${mimeType};base64,${imageBuffer.toString('base64')}` }
-                            }
-                        ]
-                    }
-                ],
-                response_format: { type: "json_object" }
-            });
-            return JSON.parse(response.choices[0].message.content || '{}');
+        // Try Gemini Fallback
+        if (geminiKey && geminiKey !== 'PLACEHOLDER' && geminiKey.length > 10) {
+            const model = getGenAI().getGenerativeModel({ model: 'gemini-2.0-flash' });
+
+            const result = await retryOperation(() => model.generateContent([
+                prompt,
+                { inlineData: { data: imageBuffer.toString('base64'), mimeType } }
+            ]));
+
+            const response = await result.response;
+            const text = response.text();
+            const jsonMatch = text.match(/\{[\s\S]*\}/);
+            if (jsonMatch) return JSON.parse(jsonMatch[0]);
         }
 
         throw new Error('AI Analysis Unavailable: No valid API keys found (Gemini/OpenAI).');
@@ -123,6 +123,7 @@ export const analyzeMedicalImage = async (imageBuffer: Buffer, mimeType: string,
 export const generateHealthNews = async (location: string) => {
     try {
         const geminiKey = process.env.GEMINI_API_KEY;
+        const openaiKey = process.env.OPENAI_API_KEY;
         const prompt = `Generate 3-5 brief, localized health news alerts for: ${location}.
         Focus on environmental health, disease outbreaks, or wellness tips relevant to the area/season.
         
@@ -140,6 +141,22 @@ export const generateHealthNews = async (location: string) => {
                 }
             ]
         }`;
+
+        if (openaiKey && openaiKey.length > 10) {
+            try {
+                const response = await getOpenAI().chat.completions.create({
+                    model: "gpt-4o-mini",
+                    messages: [
+                        { role: "system", content: "You are a health news aggregator AI. Always return valid JSON." },
+                        { role: "user", content: prompt }
+                    ],
+                    response_format: { type: "json_object" }
+                });
+                return JSON.parse(response.choices[0].message.content || '{"news": []}');
+            } catch (err: any) {
+                console.warn('OpenAI Health News failed, trying Gemini...', err.message);
+            }
+        }
 
         if (geminiKey && geminiKey !== 'PLACEHOLDER' && geminiKey.length > 10) {
             const model = getGenAI().getGenerativeModel({ model: 'gemini-2.0-flash' });
@@ -189,18 +206,22 @@ export const synthesizeClinicalNote = async (scanData: any, role: 'doctor' | 'pa
             : `As a patient care assistant, explain this medical scan in simple, comforting language. Scan: ${scanData?.type || 'Unknown'}. Findings: ${(scanData?.analysis?.findings || []).join(', ') || 'None'}. Use analogies, avoid jargon, be reassuring.`;
 
 
+        if (openaiKey && openaiKey.length > 10) {
+            try {
+                const res = await getOpenAI().chat.completions.create({
+                    model: 'gpt-4o-mini',
+                    messages: [{ role: 'user', content: prompt }]
+                });
+                return res.choices[0]?.message?.content || '';
+            } catch (err: any) {
+                console.warn('OpenAI failed, trying Gemini...', err.message);
+            }
+        }
+
         if (geminiKey && geminiKey !== 'PLACEHOLDER' && geminiKey.length > 10) {
             const model = getGenAI().getGenerativeModel({ model: 'gemini-2.0-flash' });
             const result = await retryOperation(() => model.generateContent(prompt));
             return (await result.response).text();
-        }
-
-        if (openaiKey && openaiKey.length > 10) {
-            const res = await getOpenAI().chat.completions.create({
-                model: 'gpt-4o-mini',
-                messages: [{ role: 'user', content: prompt }]
-            });
-            return res.choices[0]?.message?.content || '';
         }
         throw new Error('No AI API keys configured');
     } catch (err: any) {
@@ -218,21 +239,24 @@ export const explainLabReport = async (text: string) => {
       Lab Report Text: ${text}`;
 
 
+        if (openaiKey && openaiKey.length > 10) {
+            try {
+                const response = await getOpenAI().chat.completions.create({
+                    model: "gpt-4o-mini",
+                    messages: [{ role: "user", content: prompt }]
+                });
+                return response.choices[0].message.content;
+            } catch (err: any) {
+                console.warn('OpenAI failed, trying Gemini...', err.message);
+            }
+        }
+
         if (geminiKey && geminiKey !== 'PLACEHOLDER' && geminiKey.length > 10) {
             const model = getGenAI().getGenerativeModel({ model: 'gemini-2.0-flash' });
 
             const result = await retryOperation(() => model.generateContent(prompt));
             const response = await result.response;
             return response.text();
-        }
-
-
-        if (openaiKey && openaiKey.length > 10) {
-            const response = await getOpenAI().chat.completions.create({
-                model: "gpt-4o-mini",
-                messages: [{ role: "user", content: prompt }]
-            });
-            return response.choices[0].message.content;
         }
 
 
@@ -247,6 +271,8 @@ export const explainLabReport = async (text: string) => {
 export const analyzeECG = async (ecgData: any, samplingRate: number) => {
     try {
         const geminiKey = process.env.GEMINI_API_KEY;
+        const openaiKey = process.env.OPENAI_API_KEY;
+
         const prompt = `Analyze this ECG data (sampled at ${samplingRate}Hz). 
         Identify rhythm, potential abnormalities (arrhythmias, ischemia, infarction, etc.), and provide a clinical summary.
         
@@ -261,9 +287,25 @@ export const analyzeECG = async (ecgData: any, samplingRate: number) => {
             "confidence": number (0.0-1.0)
         }`;
 
+        // Try OpenAI First (if available) or as fallback
+        if (openaiKey && openaiKey.length > 10) {
+            try {
+                const response = await getOpenAI().chat.completions.create({
+                    model: "gpt-4o-mini",
+                    messages: [
+                        { role: "system", content: "You are an expert cardiologist AI. Always return valid JSON." },
+                        { role: "user", content: prompt }
+                    ],
+                    response_format: { type: "json_object" }
+                });
+                return JSON.parse(response.choices[0].message.content || '{}');
+            } catch (err: any) {
+                console.warn('OpenAI ECG analysis failed, trying Gemini...', err.message);
+            }
+        }
+
         if (geminiKey && geminiKey !== 'PLACEHOLDER' && geminiKey.length > 10) {
             const model = getGenAI().getGenerativeModel({ model: 'gemini-2.0-flash' });
-
 
             const result = await model.generateContent(prompt);
             const response = await result.response;
@@ -273,7 +315,7 @@ export const analyzeECG = async (ecgData: any, samplingRate: number) => {
             throw new Error("Failed to parse JSON from AI response");
         }
 
-        throw new Error('ECG Analysis Unavailable: No valid Gemini API key found.');
+        throw new Error('ECG Analysis Unavailable: No valid API keys found (Gemini/OpenAI).');
     } catch (error: any) {
         console.error('AI ECG Analysis Error:', error);
         throw error;
