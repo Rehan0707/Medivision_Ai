@@ -13,7 +13,16 @@ interface HealthNews {
     category: string;
     impact: "high" | "medium" | "low";
     summary: string;
+    url?: string;
+    image?: string;
 }
+
+const determineImpact = (title: string): "high" | "medium" | "low" => {
+    const t = title.toLowerCase();
+    if (t.includes("outbreak") || t.includes("emergency") || t.includes("critical") || t.includes("alert")) return "high";
+    if (t.includes("warning") || t.includes("update") || t.includes("rising") || t.includes("increase") || t.includes("cases")) return "medium";
+    return "low";
+};
 
 import { apiUrl } from "@/lib/api";
 
@@ -81,13 +90,6 @@ export const LocalizedHealthNews = () => {
             });
 
             const data = await res.json();
-<<<<<<< HEAD
-            if (data.news && Array.isArray(data.news)) {
-                setNews(data.news);
-                // If the AI returned a specific location name in the news source or title, 
-                // we could theoretically update the display location, but let's stick to the coordinates or "Detected" state.
-                if (!isRuralMode && !location.includes("Lat")) setLocation("San Francisco Bay Area"); // Fallback cosmetic for demo
-=======
 
             if (!res.ok) throw new Error(data.message || "Failed to fetch news");
 
@@ -107,7 +109,9 @@ export const LocalizedHealthNews = () => {
                     image: article.urlToImage || article.image
                 }));
                 setNews(mappedNews);
->>>>>>> b43fa69 (Fix Signal Intel fallback and Health Briefing (News) data mismatch)
+
+                // Cosmetic fallback for demo purposes
+                if (!isRuralMode && !location.includes("Lat")) setLocation("San Francisco Bay Area");
             }
         } catch (err) {
             console.error("Failed to fetch AI news:", err);
@@ -177,7 +181,11 @@ export const LocalizedHealthNews = () => {
                             className="space-y-6"
                         >
                             {news.map((item) => (
-                                <div key={item.id} className="group cursor-pointer">
+                                <div
+                                    key={item.id}
+                                    className="group cursor-pointer"
+                                    onClick={() => item.url && item.url !== "#" && window.open(item.url, '_blank')}
+                                >
                                     <div className="flex justify-between items-start mb-2">
                                         <span className={`text-[8px] font-black px-2 py-0.5 rounded uppercase tracking-tighter ${getImpactColor(item.impact)}`}>
                                             {item.impact} Impact
